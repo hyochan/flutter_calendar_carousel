@@ -428,13 +428,15 @@ class _CalendarState<T extends EventInterface>
     return Container(
       width: double.infinity,
       height: double.infinity,
-      decoration:
-          widget.noSelectedDays.contains(DateTime(now.year, now.month, now.day))
-              ? BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.grey[400]!.withOpacity(0.8),
-                )
-              : null,
+      decoration: widget.noSelectedDays.any((element) =>
+              element.year == now.year &&
+              element.month == now.month &&
+              element.day == now.day)
+          ? BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[400]!.withOpacity(0.8),
+            )
+          : null,
       child: Row(
         crossAxisAlignment: widget.dayCrossAxisAlignment,
         mainAxisAlignment: widget.dayMainAxisAlignment,
@@ -540,8 +542,10 @@ class _CalendarState<T extends EventInterface>
             padding: EdgeInsets.all(widget.dayPadding),
           ),
           onPressed: widget.disableDayPressed ||
-                  widget.noSelectedDays
-                      .contains(DateTime(now.year, now.month, now.day))
+                  widget.noSelectedDays.any((element) =>
+                      element.year == now.year &&
+                      element.month == now.month &&
+                      element.day == now.day)
               ? null
               : () => _onDayPressed(now),
           child: Stack(
