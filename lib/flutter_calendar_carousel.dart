@@ -424,9 +424,7 @@ class _CalendarState<T extends EventInterface>
     bool isThisMonthDay,
     DateTime now,
   ) {
-    return SizedBox(
-      width: double.infinity,
-      height: double.infinity,
+    return SizedBox.expand(
       child: Row(
         crossAxisAlignment: widget.dayCrossAxisAlignment,
         mainAxisAlignment: widget.dayMainAxisAlignment,
@@ -619,9 +617,7 @@ class _CalendarState<T extends EventInterface>
       child: Stack(
         children: <Widget>[
           Positioned(
-            child: SizedBox(
-              width: double.infinity,
-              height: double.infinity,
+            child: SizedBox.expand(
               child: GridView.count(
                 physics: widget.customGridViewPhysics,
                 crossAxisCount: 7,
@@ -734,9 +730,7 @@ class _CalendarState<T extends EventInterface>
         child: Stack(
           children: <Widget>[
             Positioned(
-              child: SizedBox(
-                width: double.infinity,
-                height: double.infinity,
+              child: SizedBox.expand(
                 child: GridView.count(
                   physics: widget.customGridViewPhysics,
                   crossAxisCount: 7,
