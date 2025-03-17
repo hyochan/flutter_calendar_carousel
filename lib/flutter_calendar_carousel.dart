@@ -126,9 +126,9 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
   final TextStyle? inactiveDaysTextStyle;
   final TextStyle? inactiveWeekendTextStyle;
   final bool headerTitleTouchable;
-  final Function? onHeaderTitlePressed;
-  final Function? onLeftArrowPressed;
-  final Function? onRightArrowPressed;
+  final VoidCallback? onHeaderTitlePressed;
+  final VoidCallback? onLeftArrowPressed;
+  final VoidCallback? onRightArrowPressed;
   final WeekdayFormat weekDayFormat;
   final bool staticSixWeekFormat;
   final bool isScrollable;
