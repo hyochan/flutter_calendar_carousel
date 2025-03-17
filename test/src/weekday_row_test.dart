@@ -14,7 +14,7 @@ void main() {
       WeekdayRow(
         0,
         null,
-        weekdayPadding: EdgeInsets.all(0),
+        weekdayPadding: EdgeInsets.zero,
         weekdayBackgroundColor: Colors.transparent,
         showWeekdays: true,
         weekdayFormat: WeekdayFormat.short,
@@ -37,7 +37,7 @@ void main() {
     await tester.pumpWidget(wrapped(WeekdayRow(
       0,
       null,
-      weekdayPadding: EdgeInsets.all(0),
+      weekdayPadding: EdgeInsets.zero,
       weekdayBackgroundColor: Colors.transparent,
       showWeekdays: true,
       weekdayFormat: WeekdayFormat.standaloneNarrow,
@@ -60,7 +60,7 @@ void main() {
     await tester.pumpWidget(wrapped(WeekdayRow(
       0,
       null,
-      weekdayPadding: EdgeInsets.all(0),
+      weekdayPadding: EdgeInsets.zero,
       weekdayBackgroundColor: Colors.transparent,
       showWeekdays: true,
       weekdayFormat: WeekdayFormat.standalone,
@@ -82,7 +82,7 @@ void main() {
     await tester.pumpWidget(wrapped(WeekdayRow(
       0,
       null,
-      weekdayPadding: EdgeInsets.all(0),
+      weekdayPadding: EdgeInsets.zero,
       weekdayBackgroundColor: Colors.transparent,
       showWeekdays: true,
       weekdayFormat: WeekdayFormat.standaloneShort,
@@ -104,7 +104,7 @@ void main() {
     final emptyContainer = WeekdayRow(
       0,
       null,
-      weekdayPadding: EdgeInsets.all(0),
+      weekdayPadding: EdgeInsets.zero,
       weekdayBackgroundColor: Colors.transparent,
       showWeekdays: false,
       weekdayFormat: WeekdayFormat.standaloneNarrow,

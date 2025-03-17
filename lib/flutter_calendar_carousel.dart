@@ -191,7 +191,7 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
       this.headerMargin = const EdgeInsets.symmetric(vertical: 16),
       this.childAspectRatio = 1,
       this.weekDayMargin = const EdgeInsets.only(bottom: 4),
-      this.weekDayPadding = const EdgeInsets.all(0),
+      this.weekDayPadding = EdgeInsets.zero,
       this.weekDayBackgroundColor = Colors.transparent,
       this.customWeekDayBuilder,
       this.customDayBuilder,
