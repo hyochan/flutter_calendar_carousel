@@ -261,7 +261,7 @@ class _CalendarState<T extends EventInterface>
   /// If the setState called from this class, don't reload the selectedDate, but it should reload selected date if called from external class
 
   @override
-  initState() {
+  void initState() {
     super.initState();
     initializeDateFormatting();
 
@@ -302,7 +302,7 @@ class _CalendarState<T extends EventInterface>
   }
 
   @override
-  dispose() {
+  void dispose() {
     _controller.dispose();
     super.dispose();
   }
@@ -856,7 +856,7 @@ class _CalendarState<T extends EventInterface>
         ?.call(picked, widget.markedDatesMap?.getEvents(picked) ?? const []);
   }
 
-  Future<Null> _selectDateFromPicker() async {
+  Future<void> _selectDateFromPicker() async {
     DateTime? selected = await showDatePicker(
       context: context,
       initialDate: _selectedDate,
