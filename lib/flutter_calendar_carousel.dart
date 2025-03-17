@@ -308,7 +308,7 @@ class _CalendarState<T extends EventInterface>
     super.dispose();
   }
 
-  _init() {
+  void _init() {
     final targetDateTime = widget.targetDateTime;
     if (targetDateTime != null) {
       if (targetDateTime.difference(minDate).inDays < 0) {
