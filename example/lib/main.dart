@@ -56,7 +56,7 @@ class _MyHomePageState extends State<MyHomePage> {
   DateTime _targetDateTime = DateTime(2019, 2, 3);
 
 //  List<DateTime> _markedDate = [DateTime(2018, 9, 20), DateTime(2018, 10, 11)];
-  static final Widget _eventIcon = Container(
+  static final Widget _eventIcon = DecoratedBox(
     decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.all(Radius.circular(1000)),
