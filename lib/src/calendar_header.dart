@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_calendar_carousel/src/default_styles.dart' show defaultHeaderTextStyle;
+import 'package:flutter_calendar_carousel/src/default_styles.dart'
+    show defaultHeaderTextStyle;
 
 class CalendarHeader extends StatelessWidget {
   /// Passing in values for [leftButtonIcon] or [rightButtonIcon] will override [headerIconColor]
