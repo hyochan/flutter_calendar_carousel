@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import 'marked_date.dart';
+import 'package:flutter_calendar_carousel/classes/marked_date.dart';
 
 class MultipleMarkedDates {
   List<MarkedDate> markedDates;
