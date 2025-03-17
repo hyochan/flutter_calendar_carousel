@@ -65,11 +65,12 @@ class CalendarHeader extends StatelessWidget {
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
-                    showHeaderButtons ? _leftButton() : Container(),
-                    isTitleTouchable
-                        ? _headerTouchable()
-                        : Text(headerTitle, style: getTextStyle),
-                    showHeaderButtons ? _rightButton() : Container(),
+                    if (showHeaderButtons) _leftButton() else Container(),
+                    if (isTitleTouchable)
+                      _headerTouchable()
+                    else
+                      Text(headerTitle, style: getTextStyle),
+                    if (showHeaderButtons) _rightButton() else Container(),
                   ])),
         )
       : Container();
