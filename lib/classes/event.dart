@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+@immutable
 class Event implements EventInterface {
   final DateTime date;
   final String? title;
@@ -8,7 +9,8 @@ class Event implements EventInterface {
   final Widget? icon;
   final Widget? dot;
   final int? id;
-  Event({
+
+  const Event({
     this.id,
     required this.date,
     this.title,

@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
+@immutable
 class MarkedDate implements MarkedDateInterface {
   final Color color;
   final int? id;
   final TextStyle? textStyle;
   final DateTime date;
 
-  MarkedDate({
+  const MarkedDate({
     required this.color,
     this.id,
     this.textStyle,
