@@ -15,7 +15,9 @@ import 'package:intl/intl.dart' show DateFormat;
 export 'package:flutter_calendar_carousel/classes/event_list.dart';
 
 typedef MarkedDateIconBuilder<T> = Widget? Function(T event);
+typedef OnDayPressed<T> = void Function(DateTime, List<T>);
 typedef OnDayLongPressed = void Function(DateTime day);
+typedef OnCalendarChanged = void Function(DateTime);
 
 /// This builder is called for every day in the calendar.
 /// If you want to build only few custom day containers, return null for the days you want to leave with default looks
@@ -72,7 +74,7 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
   final Color selectedDayBorderColor;
   final bool? daysHaveCircularBorder;
   final bool disableDayPressed;
-  final Function(DateTime, List<T>)? onDayPressed;
+  final OnDayPressed<T>? onDayPressed;
   final TextStyle? weekdayTextStyle;
   final Color iconColor;
   final TextStyle? headerTextStyle;
@@ -117,7 +119,7 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
   final Widget? leftButtonIcon;
   final Widget? rightButtonIcon;
   final ScrollPhysics? customGridViewPhysics;
-  final Function(DateTime)? onCalendarChanged;
+  final OnCalendarChanged? onCalendarChanged;
   final String locale;
   final int? firstDayOfWeek;
   final DateTime? minSelectedDate;
@@ -950,7 +952,7 @@ class _CalendarState<T extends EventInterface>
       }
 
       //call callback
-      final onCalendarChanged = widget.onCalendarChanged;
+      final OnCalendarChanged? onCalendarChanged = widget.onCalendarChanged;
       if (onCalendarChanged != null) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           onCalendarChanged(!widget.weekFormat
