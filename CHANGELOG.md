@@ -17,13 +17,6 @@
 - Support Xcode 16 for iOS ([#385](https://github.com/hyochan/flutter_calendar_carousel/pull/385))
 - Migrate Gradle to use declarative plugins block in Android example ([#383](https://github.com/hyochan/flutter_calendar_carousel/pull/383))
 
-## [2.5.0]
-
-- Add linter and code formatting ([#386](https://github.com/hyochan/flutter_calendar_carousel/pull/386))
-- Upgrade dependencies and integrate linter ([#384](https://github.com/hyochan/flutter_calendar_carousel/pull/384))
-- Support Xcode 16 for iOS ([#385](https://github.com/hyochan/flutter_calendar_carousel/pull/385))
-- Migrate Gradle to use declarative plugins block in Android example ([#383](https://github.com/hyochan/flutter_calendar_carousel/pull/383))
-
 ## [2.4.4]
 
 Upgrade intl to `^0.19.0`
