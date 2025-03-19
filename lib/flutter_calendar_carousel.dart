@@ -56,6 +56,7 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
   final TextStyle? prevDaysTextStyle;
   final TextStyle? daysTextStyle;
   final TextStyle? nextDaysTextStyle;
+  final Color backGroundColor;
   final Color prevMonthDayBorderColor;
   final Color thisMonthDayBorderColor;
   final Color nextMonthDayBorderColor;
@@ -155,6 +156,7 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
     this.prevMonthDayBorderColor = Colors.transparent,
     this.thisMonthDayBorderColor = Colors.transparent,
     this.nextMonthDayBorderColor = Colors.transparent,
+    this.backGroundColor = Color.white
     this.dayPadding = 2.0,
     this.height = double.infinity,
     this.width = double.infinity,
@@ -337,6 +339,7 @@ class _CalendarState<T extends EventInterface>
     return Container(
       width: widget.width,
       height: widget.height,
+      color: backGroundColor,
       child: Column(
         children: <Widget>[
           CalendarHeader(
