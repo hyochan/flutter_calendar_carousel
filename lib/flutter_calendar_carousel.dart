@@ -682,19 +682,7 @@ class _CalendarState<T extends EventInterface>
                       markedDatesMap.getEvents(now).isNotEmpty) {
                     textStyle = widget.markedDateCustomTextStyle;
                   }
-                  bool isSelectable = true;
-                  if (now.millisecondsSinceEpoch <
-                      minDate.millisecondsSinceEpoch) {
-                    isSelectable = false;
-                  } else if (now.millisecondsSinceEpoch >
-                      maxDate.millisecondsSinceEpoch) {
-                    isSelectable = false;
-                  } else if (widget.inactiveDates.any(
-                    (final DateTime inactiveDate) =>
-                        inactiveDate.isSameDay(now),
-                  )) {
-                    isSelectable = false;
-                  }
+                  final bool isSelectable = _determineIsSelectable(now);
 
                   return renderDay(
                       isSelectable,
@@ -789,19 +777,8 @@ class _CalendarState<T extends EventInterface>
                     } else {
                       return Container();
                     }
-                    bool isSelectable = true;
-                    if (now.millisecondsSinceEpoch <
-                        minDate.millisecondsSinceEpoch) {
-                      isSelectable = false;
-                    } else if (now.millisecondsSinceEpoch >
-                        maxDate.millisecondsSinceEpoch) {
-                      isSelectable = false;
-                    } else if (widget.inactiveDates.any(
-                      (final DateTime inactiveDate) =>
-                          inactiveDate.isSameDay(now),
-                    )) {
-                      isSelectable = false;
-                    }
+                    final bool isSelectable = _determineIsSelectable(now);
+
                     return renderDay(
                         isSelectable,
                         index,
@@ -819,6 +796,20 @@ class _CalendarState<T extends EventInterface>
             ),
           ],
         ));
+  }
+
+  bool _determineIsSelectable(DateTime now) {
+    bool isSelectable = true;
+    if (now.millisecondsSinceEpoch < minDate.millisecondsSinceEpoch) {
+      isSelectable = false;
+    } else if (now.millisecondsSinceEpoch > maxDate.millisecondsSinceEpoch) {
+      isSelectable = false;
+    } else if (widget.inactiveDates.any(
+      (final DateTime inactiveDate) => inactiveDate.isSameDay(now),
+    )) {
+      isSelectable = false;
+    }
+    return isSelectable;
   }
 
   List<DateTime> _getDaysInWeek([DateTime? selectedDate]) {
