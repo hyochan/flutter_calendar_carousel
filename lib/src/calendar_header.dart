@@ -40,6 +40,8 @@ class CalendarHeader extends StatelessWidget {
 
   TextStyle get getTextStyle => headerTextStyle ?? defaultHeaderTextStyle;
 
+  Widget _inactiveDimension() => SizedBox.square(dimension: 44);
+
   Widget _leftButton() {
     if (showLeftButton) {
       return IconButton(
@@ -48,7 +50,7 @@ class CalendarHeader extends StatelessWidget {
             leftButtonIcon ?? Icon(Icons.chevron_left, color: headerIconColor),
       );
     } else if (showRightButton) {
-      return SizedBox(width: 44, height: 44);
+      return _inactiveDimension();
     } else {
       return Container();
     }
@@ -58,12 +60,11 @@ class CalendarHeader extends StatelessWidget {
     if (showRightButton) {
       return IconButton(
         onPressed: onRightButtonPressed,
-        icon:
-            rightButtonIcon ??
+        icon: rightButtonIcon ??
             Icon(Icons.chevron_right, color: headerIconColor),
       );
     } else if (showLeftButton) {
-      return SizedBox(width: 44, height: 44);
+      return _inactiveDimension();
     } else {
       return Container();
     }
