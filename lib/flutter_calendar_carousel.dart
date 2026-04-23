@@ -1,4 +1,4 @@
-library flutter_calendar_dooboo;
+library;
 
 import 'dart:async';
 
@@ -150,7 +150,7 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
   final int maxDot;
 
   const CalendarCarousel({
-    Key? key,
+    super.key,
     this.viewportFraction = 1,
     this.prevDaysTextStyle,
     this.daysTextStyle,
@@ -231,7 +231,7 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
     this.pageScrollPhysics = const ScrollPhysics(),
     this.shouldShowTransform = true,
     this.maxDot = 5,
-  }) : super(key: key);
+  });
 
   @override
   State<CalendarCarousel<T>> createState() => _CalendarState<T>();
@@ -287,7 +287,7 @@ class _CalendarState<T extends EventInterface>
 
     /// setup pageController
     _controller = PageController(
-      initialPage: this._pageNum,
+      initialPage: _pageNum,
       keepPage: true,
       viewportFraction: widget.viewportFraction,
 
@@ -355,8 +355,8 @@ class _CalendarState<T extends EventInterface>
             headerTitle:
                 headerText ??
                 (widget.weekFormat
-                    ? _localeDate.format(this._weeks[this._pageNum].first)
-                    : _localeDate.format(this._dates[this._pageNum])),
+                    ? _localeDate.format(_weeks[_pageNum].first)
+                    : _localeDate.format(_dates[_pageNum])),
             headerTextStyle: widget.headerTextStyle,
             showHeaderButtons: widget.showHeaderButton,
             headerIconColor: widget.iconColor,
@@ -365,18 +365,18 @@ class _CalendarState<T extends EventInterface>
             onLeftButtonPressed: () {
               widget.onLeftArrowPressed?.call();
 
-              if (this._pageNum > 0) _setDate(pageNum: this._pageNum - 1);
+              if (_pageNum > 0) _setDate(pageNum: _pageNum - 1);
             },
             onRightButtonPressed: () {
               widget.onRightArrowPressed?.call();
 
               if (widget.weekFormat) {
-                if (this._weeks.length - 1 > this._pageNum) {
-                  _setDate(pageNum: this._pageNum + 1);
+                if (_weeks.length - 1 > _pageNum) {
+                  _setDate(pageNum: _pageNum + 1);
                 }
               } else {
-                if (this._dates.length - 1 > this._pageNum) {
-                  _setDate(pageNum: this._pageNum + 1);
+                if (_dates.length - 1 > _pageNum) {
+                  _setDate(pageNum: _pageNum + 1);
                 }
               }
             },
@@ -404,15 +404,13 @@ class _CalendarState<T extends EventInterface>
           ),
           Expanded(
             child: PageView.builder(
-              itemCount: widget.weekFormat
-                  ? this._weeks.length
-                  : this._dates.length,
+              itemCount: widget.weekFormat ? _weeks.length : _dates.length,
               physics: widget.isScrollable
                   ? widget.pageScrollPhysics
                   : NeverScrollableScrollPhysics(),
               scrollDirection: widget.scrollDirection,
               onPageChanged: (index) {
-                this._setDate(pageNum: index, shouldJumpToPage: false);
+                _setDate(pageNum: index, shouldJumpToPage: false);
               },
               controller: _controller,
               itemBuilder: (context, index) {
@@ -772,13 +770,13 @@ class _CalendarState<T extends EventInterface>
                       weekDays[index].month == DateTime.now().month &&
                       weekDays[index].year == DateTime.now().year;
                   bool isSelectedDay =
-                      this._selectedDate.year == weekDays[index].year &&
-                      this._selectedDate.month == weekDays[index].month &&
-                      this._selectedDate.day == weekDays[index].day;
+                      _selectedDate.year == weekDays[index].year &&
+                      _selectedDate.month == weekDays[index].month &&
+                      _selectedDate.day == weekDays[index].day;
                   bool isPrevMonthDay =
-                      weekDays[index].month < this._targetDate.month;
+                      weekDays[index].month < _targetDate.month;
                   bool isNextMonthDay =
-                      weekDays[index].month > this._targetDate.month;
+                      weekDays[index].month > _targetDate.month;
                   bool isThisMonthDay = !isPrevMonthDay && !isNextMonthDay;
 
                   DateTime now = DateTime(
@@ -931,9 +929,7 @@ class _CalendarState<T extends EventInterface>
       date.add(DateTime(minDate.year, minDate.month + cnt, 1));
       if (0 ==
           date.last
-              .difference(
-                DateTime(this._targetDate.year, this._targetDate.month),
-              )
+              .difference(DateTime(_targetDate.year, _targetDate.month))
               .inDays) {
         currentDateIndex = cnt;
       }
@@ -967,8 +963,8 @@ class _CalendarState<T extends EventInterface>
           1,
         ).weekday -
         firstDayOfWeek;
-    this._dates = date;
-    this._weeks = week;
+    _dates = date;
+    _weeks = week;
     //        this._selectedDate = widget.selectedDateTime != null
     //            ? widget.selectedDateTime
     //            : DateTime.now();
@@ -982,8 +978,8 @@ class _CalendarState<T extends EventInterface>
     } else {
       if (widget.weekFormat) {
         setState(() {
-          this._pageNum = pageNum;
-          this._targetDate = this._weeks[pageNum].first;
+          _pageNum = pageNum;
+          _targetDate = _weeks[pageNum].first;
         });
 
         if (shouldJumpToPage) {
@@ -995,8 +991,8 @@ class _CalendarState<T extends EventInterface>
         }
       } else {
         setState(() {
-          this._pageNum = pageNum;
-          this._targetDate = this._dates[pageNum];
+          _pageNum = pageNum;
+          _targetDate = _dates[pageNum];
           _startWeekday = _dates[pageNum].weekday - firstDayOfWeek;
           _endWeekday =
               _lastDayOfWeek(_dates[pageNum]).weekday - firstDayOfWeek;
@@ -1017,8 +1013,8 @@ class _CalendarState<T extends EventInterface>
         WidgetsBinding.instance.addPostFrameCallback((_) {
           onCalendarChanged(
             !widget.weekFormat
-                ? this._dates[pageNum]
-                : this._weeks[pageNum][firstDayOfWeek],
+                ? _dates[pageNum]
+                : _weeks[pageNum][firstDayOfWeek],
           );
         });
       }

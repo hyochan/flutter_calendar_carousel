@@ -8,7 +8,7 @@ class WeekdayRow extends StatelessWidget {
   const WeekdayRow(
     this.firstDayOfWeek,
     this.customWeekdayBuilder, {
-    Key? key,
+    super.key,
     required this.showWeekdays,
     required this.weekdayFormat,
     required this.weekdayMargin,
@@ -16,7 +16,7 @@ class WeekdayRow extends StatelessWidget {
     required this.weekdayBackgroundColor,
     required this.weekdayTextStyle,
     required this.localeDate,
-  }) : super(key: key);
+  });
 
   final WeekdayBuilder? customWeekdayBuilder;
   final bool showWeekdays;
@@ -117,9 +117,6 @@ class WeekdayRow extends StatelessWidget {
           break;
         case WeekdayFormat.standaloneNarrow:
           weekDay = localeDate.dateSymbols.STANDALONENARROWWEEKDAYS[i];
-          break;
-        default:
-          weekDay = localeDate.dateSymbols.STANDALONEWEEKDAYS[i];
           break;
       }
       list.add(_weekdayContainer(count, weekDay));
