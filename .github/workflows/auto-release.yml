@@ -1,0 +1,131 @@
+name: Auto Release
+
+# ----------------------------------------------------------------------------
+# Fully-automated release scheduler.
+#
+# Runs weekly and dispatches release.yml with a decided bump type. No human in
+# the loop. If you need a manual cut (e.g. a targeted `major`), use:
+#
+#   gh workflow run release.yml -f version=major -f prerelease=false -f create_release=true
+#
+# Requirements for this to work end-to-end:
+#   * `DEPENDENCY_UPDATE_PAT` secret with `repo` + `workflow` scope. Without it,
+#     release.yml pushes the new tag using GITHUB_TOKEN, which does NOT trigger
+#     publish.yml (GitHub's loop-prevention rule).
+#   * `main` branch protection must allow the bot's commits from release.yml,
+#     or the PAT must belong to a user/role with bypass.
+#   * For pub.dev publish: pub.dev OIDC must be configured. See
+#     .claude/guides/05-deployment.md.
+# ----------------------------------------------------------------------------
+
+on:
+  schedule:
+    # 10:00 UTC every Monday (~19:00 KST). GitHub cron is always UTC.
+    - cron: '0 10 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: auto-release
+  cancel-in-progress: false
+
+jobs:
+  decide:
+    name: Decide release type
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      bump: ${{ steps.decide.outputs.bump }}
+      should_release: ${{ steps.decide.outputs.should_release }}
+      reason: ${{ steps.decide.outputs.reason }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Decide bump
+        id: decide
+        run: |
+          set -euo pipefail
+
+          prev_tag=$(git tag --sort=-creatordate | head -n1 || true)
+
+          if [ -z "$prev_tag" ]; then
+            echo "No prior tag. Seeding with patch from current pubspec.yaml version."
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "bump=patch" >> "$GITHUB_OUTPUT"
+            echo "reason=no prior tag; seeding patch" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          commits=$(git log "${prev_tag}..HEAD" --oneline)
+          if [ -z "$commits" ]; then
+            echo "No commits since ${prev_tag}; nothing to release."
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "reason=no commits since ${prev_tag}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          messages=$(git log "${prev_tag}..HEAD" --format='%s%n%b')
+
+          # Detect breaking changes in commit messages or PR titles.
+          # Supports Conventional Commits ("feat!:", "BREAKING CHANGE:") and free-form "BREAKING".
+          if echo "$messages" | grep -Eqi '(^|\W)(BREAKING[ _-]?CHANGE|breaking)(\W|$)|!:' ; then
+            echo "Breaking changes detected; skipping auto-release. A human should dispatch a major."
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "reason=breaking change detected; human-dispatched major required" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Detect additive features (Conventional Commits "feat:" or title containing "add ... parameter"-ish hints).
+          if echo "$messages" | grep -Eqi '^feat(\(.+\))?:' ; then
+            echo "feat: commits detected; bumping minor"
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            echo "bump=minor" >> "$GITHUB_OUTPUT"
+            echo "reason=feat commits since ${prev_tag}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Fallback: patch.
+          echo "should_release=true" >> "$GITHUB_OUTPUT"
+          echo "bump=patch" >> "$GITHUB_OUTPUT"
+          echo "reason=only patch-level changes since ${prev_tag}" >> "$GITHUB_OUTPUT"
+
+  dispatch:
+    name: Dispatch release.yml
+    needs: decide
+    if: needs.decide.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Dispatch release
+        env:
+          GH_TOKEN: ${{ secrets.DEPENDENCY_UPDATE_PAT || secrets.GITHUB_TOKEN }}
+          BUMP: ${{ needs.decide.outputs.bump }}
+          REASON: ${{ needs.decide.outputs.reason }}
+        run: |
+          set -euo pipefail
+          echo "Auto-release reason: ${REASON}"
+          gh workflow run release.yml \
+            --ref main \
+            -f version="${BUMP}" \
+            -f prerelease=false \
+            -f create_release=true
+
+  skip:
+    name: Skip (no release)
+    needs: decide
+    if: needs.decide.outputs.should_release != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log reason
+        env:
+          REASON: ${{ needs.decide.outputs.reason }}
+        run: echo "Auto-release skipped: ${REASON}"

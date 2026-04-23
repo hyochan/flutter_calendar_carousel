@@ -1,0 +1,233 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+          - current
+          - rc-bump
+      prerelease:
+        description: 'Mark as prerelease (adds -rc.1 when bumping)'
+        required: true
+        default: false
+        type: boolean
+      create_release:
+        description: 'Create a GitHub Release'
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check formatting
+        run: dart format --set-exit-if-changed .
+
+      - name: Static analysis
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Dry-run publish
+        run: flutter pub publish --dry-run
+
+  deploy:
+    name: Deploy
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      tag: ${{ steps.bump.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DEPENDENCY_UPDATE_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Compute new version
+        id: bump
+        env:
+          BUMP: ${{ inputs.version }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          set -euo pipefail
+
+          current=$(grep '^version:' pubspec.yaml | awk '{print $2}')
+          echo "current_version=$current" >> "$GITHUB_OUTPUT"
+          echo "Current version: $current"
+
+          # Strip any existing -rc.N suffix for base math.
+          base="${current%%-*}"
+          rc_suffix=""
+          case "$current" in
+            *-rc.*) rc_suffix="${current#*-}" ;;
+          esac
+
+          IFS='.' read -r major minor patch <<< "$base"
+
+          bump_semver() {
+            case "$BUMP" in
+              patch) patch=$((patch + 1)) ;;
+              minor) minor=$((minor + 1)); patch=0 ;;
+              major) major=$((major + 1)); minor=0; patch=0 ;;
+            esac
+          }
+
+          case "$BUMP" in
+            patch|minor|major)
+              bump_semver
+              new_base="${major}.${minor}.${patch}"
+              if [ "$PRERELEASE" = "true" ]; then
+                new_version="${new_base}-rc.1"
+              else
+                new_version="$new_base"
+              fi
+              ;;
+            current)
+              new_version="$current"
+              ;;
+            rc-bump)
+              if [ -z "$rc_suffix" ]; then
+                echo "rc-bump requested but current version ($current) has no -rc suffix" >&2
+                exit 1
+              fi
+              rc_num="${rc_suffix#rc.}"
+              rc_num=$((rc_num + 1))
+              new_version="${base}-rc.${rc_num}"
+              ;;
+            *)
+              echo "Unknown bump type: $BUMP" >&2
+              exit 1
+              ;;
+          esac
+
+          echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
+          echo "tag=v${new_version}" >> "$GITHUB_OUTPUT"
+          echo "New version: $new_version"
+          echo "New tag: v$new_version"
+
+      - name: Write new version to pubspec.yaml
+        if: inputs.version != 'current'
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          sed -i -E "s/^version: .*/version: ${NEW_VERSION}/" pubspec.yaml
+          grep '^version:' pubspec.yaml
+
+      - name: Regenerate CHANGELOG section
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+        run: |
+          set -euo pipefail
+
+          prev_tag=$(git tag --sort=-creatordate | head -n1 || true)
+          if [ -n "$prev_tag" ]; then
+            range="${prev_tag}..HEAD"
+          else
+            range="HEAD"
+          fi
+
+          echo "Generating CHANGELOG section for $range"
+
+          {
+            echo "## [${NEW_VERSION}] - $(date -u +%Y-%m-%d)"
+            echo ""
+            git log "$range" --pretty=format:'- %s' \
+              | grep -E '\(#[0-9]+\)$' \
+              || git log "$range" --pretty=format:'- %s'
+            echo ""
+            echo ""
+          } > .changelog_new
+
+          if [ -f CHANGELOG.md ]; then
+            cat .changelog_new CHANGELOG.md > CHANGELOG.md.tmp
+          else
+            cp .changelog_new CHANGELOG.md.tmp
+          fi
+          mv CHANGELOG.md.tmp CHANGELOG.md
+          rm -f .changelog_new
+
+      - name: Commit, tag, push
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+          TAG: ${{ steps.bump.outputs.tag }}
+        run: |
+          set -euo pipefail
+          git add pubspec.yaml CHANGELOG.md
+          if git diff --cached --quiet; then
+            echo "Nothing to commit (likely 'current' bump)."
+          else
+            git commit -m "chore(release): ${NEW_VERSION}"
+            git push origin HEAD
+          fi
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists; skipping tag creation."
+          else
+            git tag "$TAG"
+            git push origin "$TAG"
+          fi
+
+      - name: Create GitHub Release
+        if: ${{ inputs.create_release == true }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.bump.outputs.tag }}
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+          PRERELEASE: ${{ inputs.prerelease }}
+        run: |
+          set -euo pipefail
+          notes=$(awk "/^## \\[${NEW_VERSION}\\]/{flag=1;next}/^## \\[/{flag=0}flag" CHANGELOG.md || true)
+          if [ -z "$notes" ]; then
+            notes="Release ${NEW_VERSION}"
+          fi
+
+          args=(release create "$TAG" --title "$TAG" --notes "$notes")
+          if [ "$PRERELEASE" = "true" ]; then
+            args+=(--prerelease)
+          fi
+          gh "${args[@]}"

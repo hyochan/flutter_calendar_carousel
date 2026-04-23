@@ -1,0 +1,61 @@
+name: Publish to pub.dev
+
+# ----------------------------------------------------------------------------
+# Fires automatically on any `v*` tag push and publishes to pub.dev via OIDC.
+# No human-in-the-loop by design.
+#
+# ONE-TIME SETUP REQUIRED ON pub.dev:
+#   1. pub.dev -> flutter_calendar_carousel -> Admin -> Automated publishing.
+#   2. Enable "Publishing from GitHub Actions".
+#   3. Repository: hyochan/flutter_calendar_carousel.
+#   4. Tag pattern: v{{version}}.
+#   5. Required environment: pub-dev (matches `environment:` below).
+#
+# Until the above is configured on pub.dev, `dart pub publish --force` will
+# fail with an auth error on the first tag push — that's the signal to
+# complete the pub.dev-side setup. See .claude/guides/05-deployment.md.
+# ----------------------------------------------------------------------------
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: pub-dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check formatting
+        run: dart format --set-exit-if-changed .
+
+      - name: Static analysis
+        run: flutter analyze
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Dry-run publish
+        run: flutter pub publish --dry-run
+
+      - name: Publish to pub.dev
+        run: dart pub publish --force
