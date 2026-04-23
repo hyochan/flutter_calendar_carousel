@@ -128,4 +128,5 @@ jobs:
       - name: Log reason
         env:
           REASON: ${{ needs.decide.outputs.reason }}
-        run: echo "Auto-release skipped: ${REASON}"
+        run: |
+          echo "Auto-release skipped: ${REASON}"
