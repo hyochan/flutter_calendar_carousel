@@ -1,0 +1,57 @@
+name: Apply dart format
+
+# One-shot dispatch to reformat the repository with the Dart SDK shipping
+# with current Flutter stable, and commit the result back to main. Useful
+# after upgrading flutter_lints / Flutter / Dart versions when formatter
+# rules shift. Delete this file once it has served its purpose.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-format
+  cancel-in-progress: false
+
+jobs:
+  format:
+    name: Format and commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.DEPENDENCY_UPDATE_PAT || secrets.GITHUB_TOKEN }}
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Print versions
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Apply dart format
+        run: dart format .
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit reformat
+        run: |
+          if git diff --quiet; then
+            echo "Already formatted; nothing to commit."
+            exit 0
+          fi
+          git add -A
+          git commit -m "style: apply dart format"
+          git push origin HEAD
