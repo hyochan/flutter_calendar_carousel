@@ -1,3 +1,7 @@
+## [2.5.5]
+
+- Bump `flutter_lints` to `^6.0.0` and raise Dart SDK floor to `^3.8.0` ([#401](https://github.com/hyochan/flutter_calendar_carousel/pull/401))
+
 ## [2.5.4]
 
 - Update `intl` version [#397](https://github.com/hyochan/flutter_calendar_carousel/pull/397)
