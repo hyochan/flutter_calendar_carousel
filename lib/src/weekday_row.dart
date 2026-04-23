@@ -5,16 +5,18 @@ import 'package:flutter_calendar_carousel/src/default_styles.dart'
 import 'package:intl/intl.dart';
 
 class WeekdayRow extends StatelessWidget {
-  const WeekdayRow(this.firstDayOfWeek, this.customWeekdayBuilder,
-      {Key? key,
-      required this.showWeekdays,
-      required this.weekdayFormat,
-      required this.weekdayMargin,
-      required this.weekdayPadding,
-      required this.weekdayBackgroundColor,
-      required this.weekdayTextStyle,
-      required this.localeDate})
-      : super(key: key);
+  const WeekdayRow(
+    this.firstDayOfWeek,
+    this.customWeekdayBuilder, {
+    Key? key,
+    required this.showWeekdays,
+    required this.weekdayFormat,
+    required this.weekdayMargin,
+    required this.weekdayPadding,
+    required this.weekdayBackgroundColor,
+    required this.weekdayTextStyle,
+    required this.localeDate,
+  }) : super(key: key);
 
   final WeekdayBuilder? customWeekdayBuilder;
   final bool showWeekdays;
@@ -32,66 +34,69 @@ class WeekdayRow extends StatelessWidget {
         ? customWeekdayBuilder(weekday, weekDayName)
         : Expanded(
             child: Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: weekdayBackgroundColor),
-              color: weekdayBackgroundColor,
-            ),
-            margin: weekdayMargin,
-            padding: weekdayPadding,
-            child: Center(
-              child: DefaultTextStyle(
-                style: defaultWeekdayTextStyle,
-                child: Text(
-                  weekDayName,
-                  semanticsLabel: weekDayName,
-                  style: weekdayTextStyle,
+              decoration: BoxDecoration(
+                border: Border.all(color: weekdayBackgroundColor),
+                color: weekdayBackgroundColor,
+              ),
+              margin: weekdayMargin,
+              padding: weekdayPadding,
+              child: Center(
+                child: DefaultTextStyle(
+                  style: defaultWeekdayTextStyle,
+                  child: Text(
+                    weekDayName,
+                    semanticsLabel: weekDayName,
+                    style: weekdayTextStyle,
+                  ),
                 ),
               ),
             ),
-          ));
+          );
   }
 
-//  List<Widget> _generateWeekdays() {
-//    switch (weekdayFormat) {
-//      case WeekdayFormat.weekdays:
-//        return localeDate.dateSymbols.WEEKDAYS
-//            .map<Widget>(_weekdayContainer)
-//            .toList();
-//      case WeekdayFormat.standalone:
-//        return localeDate.dateSymbols.STANDALONEWEEKDAYS
-//            .map<Widget>(_weekdayContainer)
-//            .toList();
-//      case WeekdayFormat.short:
-//        return localeDate.dateSymbols.SHORTWEEKDAYS
-//            .map<Widget>(_weekdayContainer)
-//            .toList();
-//      case WeekdayFormat.standaloneShort:
-//        return localeDate.dateSymbols.STANDALONESHORTWEEKDAYS
-//            .map<Widget>(_weekdayContainer)
-//            .toList();
-//      case WeekdayFormat.narrow:
-//        return localeDate.dateSymbols.NARROWWEEKDAYS
-//            .map<Widget>(_weekdayContainer)
-//            .toList();
-//      case WeekdayFormat.standaloneNarrow:
-//        return localeDate.dateSymbols.STANDALONENARROWWEEKDAYS
-//            .map<Widget>(_weekdayContainer)
-//            .toList();
-//      default:
-//        return localeDate.dateSymbols.STANDALONEWEEKDAYS
-//            .map<Widget>(_weekdayContainer)
-//            .toList();
-//    }
-//  }
+  //  List<Widget> _generateWeekdays() {
+  //    switch (weekdayFormat) {
+  //      case WeekdayFormat.weekdays:
+  //        return localeDate.dateSymbols.WEEKDAYS
+  //            .map<Widget>(_weekdayContainer)
+  //            .toList();
+  //      case WeekdayFormat.standalone:
+  //        return localeDate.dateSymbols.STANDALONEWEEKDAYS
+  //            .map<Widget>(_weekdayContainer)
+  //            .toList();
+  //      case WeekdayFormat.short:
+  //        return localeDate.dateSymbols.SHORTWEEKDAYS
+  //            .map<Widget>(_weekdayContainer)
+  //            .toList();
+  //      case WeekdayFormat.standaloneShort:
+  //        return localeDate.dateSymbols.STANDALONESHORTWEEKDAYS
+  //            .map<Widget>(_weekdayContainer)
+  //            .toList();
+  //      case WeekdayFormat.narrow:
+  //        return localeDate.dateSymbols.NARROWWEEKDAYS
+  //            .map<Widget>(_weekdayContainer)
+  //            .toList();
+  //      case WeekdayFormat.standaloneNarrow:
+  //        return localeDate.dateSymbols.STANDALONENARROWWEEKDAYS
+  //            .map<Widget>(_weekdayContainer)
+  //            .toList();
+  //      default:
+  //        return localeDate.dateSymbols.STANDALONEWEEKDAYS
+  //            .map<Widget>(_weekdayContainer)
+  //            .toList();
+  //    }
+  //  }
 
   // TODO - locale issues
   List<Widget> _renderWeekDays() {
     List<Widget> list = [];
 
     /// because of number of days in a week is 7, so it would be easier to count it til 7.
-    for (var i = firstDayOfWeek, count = 0;
-        count < 7;
-        i = (i + 1) % 7, count++) {
+    for (
+      var i = firstDayOfWeek, count = 0;
+      count < 7;
+      i = (i + 1) % 7, count++
+    ) {
       String weekDay;
 
       switch (weekdayFormat) {

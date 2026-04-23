@@ -11,14 +11,13 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   DateTime? pressedDay;
-  testWidgets('Default test for Calendar Carousel',
-      (WidgetTester tester) async {
+  testWidgets('Default test for Calendar Carousel', (
+    WidgetTester tester,
+  ) async {
     //  Build our app and trigger a frame.
     final carousel = CalendarCarousel(
       daysHaveCircularBorder: null,
-      weekendTextStyle: TextStyle(
-        color: Colors.red,
-      ),
+      weekendTextStyle: TextStyle(color: Colors.red),
       thisMonthDayBorderColor: Colors.grey,
       headerText: 'Custom Header',
       weekFormat: true,
@@ -27,12 +26,8 @@ void main() {
       customGridViewPhysics: NeverScrollableScrollPhysics(),
       markedDateShowIcon: true,
       markedDateIconMaxShown: 2,
-      selectedDayTextStyle: TextStyle(
-        color: Colors.yellow,
-      ),
-      todayTextStyle: TextStyle(
-        color: Colors.blue,
-      ),
+      selectedDayTextStyle: TextStyle(color: Colors.yellow),
+      todayTextStyle: TextStyle(color: Colors.blue),
       markedDateIconBuilder: (Event event) {
         return event.icon ?? Icon(Icons.help_outline);
       },
@@ -44,20 +39,19 @@ void main() {
         pressedDay = date;
       },
     );
-    await tester.pumpWidget(MaterialApp(
-      home: Scaffold(
-        body: Container(
-          child: carousel,
-        ),
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: Container(child: carousel)),
       ),
-    ));
+    );
 
     expect(find.byWidget(carousel), findsOneWidget);
 
     expect(pressedDay, isNull);
 
     await tester.tap(
-        find.text(DateTime.now().subtract(Duration(days: 1)).day.toString()));
+      find.text(DateTime.now().subtract(Duration(days: 1)).day.toString()),
+    );
 
     await tester.pump();
 
