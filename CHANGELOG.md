@@ -1,3 +1,12 @@
+## [2.5.6] - 2026-04-23
+
+- style: apply dart fix and remove unreachable default
+- ci: add one-shot workflow to apply dart fix
+- style: apply dart format
+- ci: add one-shot workflow to apply dart format
+- fix(ci): correct YAML syntax in auto-release skip step
+- ci: wire up CI, release, and publish workflows
+
 ## [2.5.5]
 
 - Bump `flutter_lints` to `^6.0.0` and raise Dart SDK floor to `^3.8.0` ([#401](https://github.com/hyochan/flutter_calendar_carousel/pull/401))

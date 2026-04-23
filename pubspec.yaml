@@ -1,6 +1,6 @@
 name: flutter_calendar_carousel
 description: Calendar widget for flutter that is swipeable. This widget can help you build customizable calendar with scrollable actions.
-version: 2.5.5
+version: 2.5.6
 homepage: https://github.com/hyochan/flutter_calendar_carousel
 
 environment:
