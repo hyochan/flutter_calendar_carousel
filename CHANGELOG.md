@@ -1,3 +1,7 @@
+## [2.5.7] - 2026-04-27
+
+- chore(ci): remove one-shot format/apply-fix workflows
+
 ## [2.5.6] - 2026-04-23
 
 - style: apply dart fix and remove unreachable default
