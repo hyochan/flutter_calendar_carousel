@@ -10,19 +10,21 @@ void main() {
   final margin = const EdgeInsets.only(bottom: 4);
 
   testWidgets('test short weekday row', (WidgetTester tester) async {
-    await tester.pumpWidget(wrapped(
-      WeekdayRow(
-        0,
-        null,
-        weekdayPadding: EdgeInsets.zero,
-        weekdayBackgroundColor: Colors.transparent,
-        showWeekdays: true,
-        weekdayFormat: WeekdayFormat.short,
-        weekdayMargin: margin,
-        weekdayTextStyle: null,
-        localeDate: locale,
+    await tester.pumpWidget(
+      wrapped(
+        WeekdayRow(
+          0,
+          null,
+          weekdayPadding: EdgeInsets.zero,
+          weekdayBackgroundColor: Colors.transparent,
+          showWeekdays: true,
+          weekdayFormat: WeekdayFormat.short,
+          weekdayMargin: margin,
+          weekdayTextStyle: null,
+          localeDate: locale,
+        ),
       ),
-    ));
+    );
 
     expect(find.text('Sun'), findsOneWidget);
     expect(find.text('Mon'), findsOneWidget);
@@ -34,17 +36,21 @@ void main() {
   });
 
   testWidgets('test narrow weekday row', (WidgetTester tester) async {
-    await tester.pumpWidget(wrapped(WeekdayRow(
-      0,
-      null,
-      weekdayPadding: EdgeInsets.zero,
-      weekdayBackgroundColor: Colors.transparent,
-      showWeekdays: true,
-      weekdayFormat: WeekdayFormat.standaloneNarrow,
-      weekdayMargin: margin,
-      weekdayTextStyle: null,
-      localeDate: locale,
-    )));
+    await tester.pumpWidget(
+      wrapped(
+        WeekdayRow(
+          0,
+          null,
+          weekdayPadding: EdgeInsets.zero,
+          weekdayBackgroundColor: Colors.transparent,
+          showWeekdays: true,
+          weekdayFormat: WeekdayFormat.standaloneNarrow,
+          weekdayMargin: margin,
+          weekdayTextStyle: null,
+          localeDate: locale,
+        ),
+      ),
+    );
 
     // sat and sun
     expect(find.text('S'), findsNWidgets(2));
@@ -57,17 +63,21 @@ void main() {
   });
 
   testWidgets('test standalone weekday row', (WidgetTester tester) async {
-    await tester.pumpWidget(wrapped(WeekdayRow(
-      0,
-      null,
-      weekdayPadding: EdgeInsets.zero,
-      weekdayBackgroundColor: Colors.transparent,
-      showWeekdays: true,
-      weekdayFormat: WeekdayFormat.standalone,
-      weekdayMargin: margin,
-      weekdayTextStyle: null,
-      localeDate: locale,
-    )));
+    await tester.pumpWidget(
+      wrapped(
+        WeekdayRow(
+          0,
+          null,
+          weekdayPadding: EdgeInsets.zero,
+          weekdayBackgroundColor: Colors.transparent,
+          showWeekdays: true,
+          weekdayFormat: WeekdayFormat.standalone,
+          weekdayMargin: margin,
+          weekdayTextStyle: null,
+          localeDate: locale,
+        ),
+      ),
+    );
 
     expect(find.text('Sunday'), findsOneWidget);
     expect(find.text('Monday'), findsOneWidget);
@@ -79,17 +89,21 @@ void main() {
   });
 
   testWidgets('test standalone short weekday row', (WidgetTester tester) async {
-    await tester.pumpWidget(wrapped(WeekdayRow(
-      0,
-      null,
-      weekdayPadding: EdgeInsets.zero,
-      weekdayBackgroundColor: Colors.transparent,
-      showWeekdays: true,
-      weekdayFormat: WeekdayFormat.standaloneShort,
-      weekdayMargin: margin,
-      weekdayTextStyle: null,
-      localeDate: locale,
-    )));
+    await tester.pumpWidget(
+      wrapped(
+        WeekdayRow(
+          0,
+          null,
+          weekdayPadding: EdgeInsets.zero,
+          weekdayBackgroundColor: Colors.transparent,
+          showWeekdays: true,
+          weekdayFormat: WeekdayFormat.standaloneShort,
+          weekdayMargin: margin,
+          weekdayTextStyle: null,
+          localeDate: locale,
+        ),
+      ),
+    );
 
     expect(find.text('Sun'), findsOneWidget);
     expect(find.text('Mon'), findsOneWidget);
@@ -98,6 +112,58 @@ void main() {
     expect(find.text('Thu'), findsOneWidget);
     expect(find.text('Fri'), findsOneWidget);
     expect(find.text('Sat'), findsOneWidget);
+  });
+
+  testWidgets('uppercases default weekday labels', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      wrapped(
+        WeekdayRow(
+          0,
+          null,
+          weekdayPadding: EdgeInsets.zero,
+          weekdayBackgroundColor: Colors.transparent,
+          showWeekdays: true,
+          weekdayFormat: WeekdayFormat.short,
+          weekdayMargin: margin,
+          weekdayTextStyle: null,
+          localeDate: locale,
+          upperCaseWeekdays: true,
+        ),
+      ),
+    );
+
+    expect(find.text('SUN'), findsOneWidget);
+    expect(find.text('MON'), findsOneWidget);
+    expect(find.text('Sun'), findsNothing);
+  });
+
+  testWidgets('passes uppercase labels to custom weekday builder', (
+    WidgetTester tester,
+  ) async {
+    final builtLabels = <String>[];
+
+    await tester.pumpWidget(
+      wrapped(
+        WeekdayRow(
+          0,
+          (weekday, weekdayName) {
+            builtLabels.add(weekdayName);
+            return Text('$weekday:$weekdayName');
+          },
+          weekdayPadding: EdgeInsets.zero,
+          weekdayBackgroundColor: Colors.transparent,
+          showWeekdays: true,
+          weekdayFormat: WeekdayFormat.short,
+          weekdayMargin: margin,
+          weekdayTextStyle: null,
+          localeDate: locale,
+          upperCaseWeekdays: true,
+        ),
+      ),
+    );
+
+    expect(builtLabels, containsAll(['SUN', 'MON', 'TUE']));
+    expect(find.text('0:SUN'), findsOneWidget);
   });
 
   testWidgets('test row does not render', (WidgetTester tester) async {
@@ -121,7 +187,5 @@ void main() {
   });
 }
 
-Widget wrapped(Widget widget) => Directionality(
-      textDirection: TextDirection.ltr,
-      child: widget,
-    );
+Widget wrapped(Widget widget) =>
+    Directionality(textDirection: TextDirection.ltr, child: widget);

@@ -61,26 +61,34 @@ class MultipleMarkedDates {
   }
 
   bool isMarked(DateTime date) {
-    final results = markedDates.firstWhere((element) => element.date == date,
-        orElse: () => MarkedDate(color: Colors.black, date: DateTime(0)));
+    final results = markedDates.firstWhere(
+      (element) => element.date == date,
+      orElse: () => MarkedDate(color: Colors.black, date: DateTime(0)),
+    );
     return results.date.year == date.year;
   }
 
   Color getColor(DateTime date) {
-    final results = markedDates.firstWhere((element) => element.date == date,
-        orElse: () => MarkedDate(color: Colors.black, date: DateTime(0)));
+    final results = markedDates.firstWhere(
+      (element) => element.date == date,
+      orElse: () => MarkedDate(color: Colors.black, date: DateTime(0)),
+    );
     return results.color;
   }
 
   DateTime getDate(DateTime date) {
-    final results = markedDates.firstWhere((element) => element.date == date,
-        orElse: () => MarkedDate(color: Colors.black, date: DateTime(0)));
+    final results = markedDates.firstWhere(
+      (element) => element.date == date,
+      orElse: () => MarkedDate(color: Colors.black, date: DateTime(0)),
+    );
     return results.date;
   }
 
   TextStyle? getTextStyle(DateTime date) {
-    final results = markedDates.firstWhere((element) => element.date == date,
-        orElse: () => MarkedDate(color: Colors.black, date: DateTime(0)));
+    final results = markedDates.firstWhere(
+      (element) => element.date == date,
+      orElse: () => MarkedDate(color: Colors.black, date: DateTime(0)),
+    );
     return results.textStyle;
   }
 }
