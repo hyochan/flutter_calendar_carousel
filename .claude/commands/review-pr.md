@@ -100,7 +100,7 @@ Bot logins:
 
 For each bot:
 
-- `reviewed_current_head`: true when the latest bot review has `commit_id == HEAD_SHA`. For bots that only leave top-level comments without commit IDs, count the comment only if it appears after the bot was explicitly kicked for `HEAD_SHA` in this run; do not use broad timestamp comparisons as a substitute for commit identity.
+- `reviewed_current_head`: true when the latest bot review has `commit_id == HEAD_SHA`. For bots that only leave top-level comments without commit IDs, count the comment only if it appears after the most recent explicit kick for `HEAD_SHA`, even when that kick happened in a previous run; do not use broad timestamp comparisons as a substitute for commit identity.
 - `has_findings`: true if the latest content contains `state == "CHANGES_REQUESTED"`, inline severity markers (🛑 / ⚠️ / `Critical` / `Major` / `Nit:` / "Suggested change"), or reviewer-authored TODO/FIXME text. Ignore TODO/FIXME when it appears only inside quoted code, diffs, or documentation examples.
 - `unavailable`: true if the bot's app or reviewer cannot be requested in this repo (kick returned 404/403/422).
 
