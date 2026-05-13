@@ -81,8 +81,8 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
         - If all reviewed & clean → Step 5 approve + auto-merge.
         - If all reviewed & has findings → classify (blocker vs. nit). Blocker → Step 6 request-changes. Non-blocking nits get one acknowledgement comment and do not force another review cycle; proceed when all other gates are green.
      5. Step 7 human threads:
-        - Human replied in last 7 days and we haven't responded → reply substantively, return `waiting-human`.
-        - Human hasn't replied in ≥ 7 days AND we already replied → autonomous resolve per Step 7 rules (request-changes or close-thread-and-merge).
+       - Human replied in last 14 days and we haven't responded → reply substantively, return `waiting-human`.
+       - Human hasn't replied in ≥ 14 days AND we already replied → add a stale warning label/comment first, then autonomously resolve per Step 7 rules only if the thread remains unanswered.
    - Never merge if any of the 3 bots hasn't reviewed current HEAD (unless that bot is unavailable in the org). Never merge while GitHub reports `DIRTY`, `BLOCKED`, `BEHIND`, or `UNSTABLE`. Never exceed 3 bot-kick iterations per PR per daily run.
 
 7. **Issue triage**

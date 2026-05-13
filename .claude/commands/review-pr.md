@@ -12,7 +12,7 @@ End state for every PR this skill touches:
 2. Gemini has posted at least one review against the current HEAD (triggered via `/gemini review for $HEAD_SHA` comment).
 3. CodeRabbit has posted a summary against the current HEAD (auto-triggered by its GitHub App on push), or CodeRabbit is unavailable in this repository and logged.
 4. No bot has actionable feedback outstanding against the current HEAD.
-5. No human thread is unanswered AND either the human has replied, or the thread is ≥ 7 days old and we have resolved autonomously.
+5. No human thread is unanswered AND either the human has replied, or the thread is ≥ 14 days old, has received a stale warning, and we have resolved autonomously.
 6. All reported status checks are green. Missing or pending checks are a wait
    state, not a change request.
 
@@ -100,7 +100,7 @@ Bot logins:
 
 For each bot:
 
-- `reviewed_current_head`: true when the latest bot review has `commit_id == HEAD_SHA`. For bots that only leave top-level comments without commit IDs, count the comment only if it appears after the most recent explicit kick for `HEAD_SHA`, even when that kick happened in a previous run; do not use broad timestamp comparisons as a substitute for commit identity.
+- `reviewed_current_head`: true when the latest bot review has `commit_id == HEAD_SHA`. For bots that only leave top-level comments without commit IDs, count the comment only when the bot response explicitly references `HEAD_SHA` from the kick; if the HEAD cannot be tied to the response, return `waiting-bots` instead of inferring from timestamps.
 - `has_findings`: true if the latest content contains `state == "CHANGES_REQUESTED"`, inline severity markers (🛑 / ⚠️ / `Critical` / `Major` / `Nit:`), an opening code fence whose info string is `suggestion`, or reviewer-authored TODO/FIXME text. Ignore TODO/FIXME when it appears only inside quoted code, diffs, or documentation examples.
 - `unavailable`: true if the bot's app or reviewer cannot be requested in this repo (kick returned 404/403/422).
 
@@ -154,10 +154,11 @@ Put every requested change in the review body as concrete file/line guidance. Do
 
 Scan for unresolved human threads (non-bot authors):
 
-- **< 7 days since human's latest message**: reply substantively, wait. Return `waiting-human`.
-- **≥ 7 days AND we already replied AND human hasn't responded**: autonomous resolution:
-  - Clear code change ask → request changes with the required edits in the review body + log "Auto-resolving after 7d no-reply".
-  - Question we already answered → "Auto-closing thread after 7d no-reply; our prior answer stands." Proceed to Step 5.
+- **< 14 days since human's latest message**: reply substantively, wait. Return `waiting-human`.
+- **≥ 14 days AND we already replied AND human hasn't responded**: add a stale warning label/comment and wait one more routine pass before autonomous resolution.
+- **Stale warning already posted AND human still hasn't responded**:
+  - Clear code change ask → request changes with the required edits in the review body + log "Auto-resolving after stale warning and no reply".
+  - Question we already answered → "Auto-closing thread after stale warning; our prior answer stands." Proceed to Step 5.
   - Ambiguous → prefer request-changes over merge. Log the decision.
 
 ## Step 8 — Return format
@@ -173,11 +174,11 @@ Result ∈ merged | requested-changes | waiting-bots | waiting-checks | waiting-
 1. Never merge until all 3 bots reviewed current HEAD (or marked unavailable).
 2. Never silence a bot by dismissing its review.
 3. Never exceed 3 kicks per bot per daily run.
-4. Never treat a human's question as answered by our previous reply unless > 7 days elapsed.
+4. Never treat a human's question as answered by our previous reply unless > 14 days elapsed and a stale warning was already posted.
 5. Never skip §2 gates because bots approved.
 6. Never open a PR from this skill. The daily routine may open a PR before invoking this review loop; `/review-pr` itself only reviews an existing PR.
 7. Never re-request review from a bot that already reviewed clean — that's the exit condition.
 
 ## Tuning knobs
 
-`REVIEW_LOOP_MAX_ITERS=3`, `REVIEW_HUMAN_AUTONOMY_DAYS=7`, `REVIEWER_{COPILOT,GEMINI,CODERABBIT}_LOGIN`, `REVIEW_POLL_SLEEP_SEC=30`.
+`REVIEW_LOOP_MAX_ITERS=3`, `REVIEW_HUMAN_AUTONOMY_DAYS=14`, `REVIEWER_{COPILOT,GEMINI,CODERABBIT}_LOGIN`, `REVIEW_POLL_SLEEP_SEC=30`.
