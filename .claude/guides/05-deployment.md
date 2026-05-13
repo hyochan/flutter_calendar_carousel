@@ -24,7 +24,7 @@ This guide describes how code moves from `main` to pub.dev.
 
 `auto-release.yml` runs on a weekly cron (Mondays 10:00 UTC). On each run it:
 
-1. Finds the most recent tag via `git tag --sort=-creatordate | head -n1`.
+1. Finds the most recent tag reachable from the release branch via `git describe --tags --abbrev=0`.
 2. If there are no commits since that tag → skip (nothing to release).
 3. Otherwise, inspects commit messages in the `<prev-tag>..HEAD` range:
    - `BREAKING` or `!:` anywhere → **skip** and surface "human-dispatched major required".
