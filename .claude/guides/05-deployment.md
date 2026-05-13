@@ -113,7 +113,7 @@ The schedule entry itself lives in Cowork, not in this repo. Earlier iterations 
 ## Repo-specific knobs & secrets
 
 - **`CODECOV_TOKEN`** — GitHub Actions secret used by `ci.yml` for coverage upload.
-- **`DEPENDENCY_UPDATE_PAT`** — (optional) personal access token used by the weekly dependency-update PR so pushes trigger CI. If missing, the weekly job falls back to `GITHUB_TOKEN` and PRs will not re-trigger CI.
+- **`DEPENDENCY_UPDATE_PAT`** — (optional) personal access token used by the weekly dependency-update PR. Pushes made with the default `GITHUB_TOKEN` do not trigger new workflow runs, so this PAT ensures CI runs on auto-generated dependency PRs. If missing, CI for those PRs will not run automatically.
 - **pub.dev OIDC link** — not a secret; configured on the pub.dev side (see above).
 - **Repository `main` branch protection** — require `ci.yml` green + at least one review.
 

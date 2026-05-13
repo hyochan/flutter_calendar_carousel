@@ -56,7 +56,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    PR=<number>
    gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer" 2>/dev/null \
      || gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
-       -f 'reviewers[]=copilot-pull-request-reviewer' 2>/dev/null
+       -f 'reviewers[]=copilot-pull-request-reviewer'
    gh pr comment "$PR" --body "/gemini review"
    # CodeRabbit auto-fires on push — no manual action.
    ```
