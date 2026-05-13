@@ -56,7 +56,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
      -f 'reviewers[]=copilot-pull-request-reviewer' 2>/dev/null \
      || gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer" 2>/dev/null \
-     || gh pr edit "$PR" --add-reviewer "copilot" 2>/dev/null || true
+     || true
    gh pr comment "$PR" --body "/gemini review"
    # CodeRabbit auto-fires on push — no manual action.
    ```
@@ -73,7 +73,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    - **Everything else** → run the full `/review-pr` flow:
      1. Step 0 prep if Copilot isn't a requested reviewer yet (assign + `/gemini review`).
      2. Step 1 fetch state (PR JSON, diff, checks, reviews, comments).
-     3. Step 2 short-circuit gates — if any failed/cancelled check or guarded blocker hits → Step 6 request-changes, stop. If checks are pending or missing, wait and report `waiting-checks`; do not request changes for CI that has not run yet.
+     3. Step 2 short-circuit gates — if any failed/cancelled check or guarded blocker hits → Step 6 request-changes, stop. If checks are pending or missing, wait and report `waiting-checks`; do not request changes for CI that has not run yet. If the branch is merely `BEHIND`, update it from `main` when the branch is repo-owned or maintainer edits are enabled; only request changes if that update fails or creates conflicts.
      4. Step 4 bot-loop:
         - All 3 bots (`gemini-code-assist[bot]`, `copilot-pull-request-reviewer[bot]`, `coderabbitai[bot]`) must have `reviewed_current_head == true` against HEAD_SHA, or be marked `unavailable` because the app/reviewer cannot be requested in this repo.
         - If any bot is still catching up and hasn't been kicked against HEAD_SHA → kick once, move on, return `waiting-bots` for this PR this run.
@@ -82,7 +82,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
      5. Step 7 human threads:
         - Human replied in last 7 days and we haven't responded → reply substantively, return `waiting-human`.
         - Human hasn't replied in ≥ 7 days AND we already replied → autonomous resolve per Step 7 rules (request-changes or close-thread-and-merge).
-   - Never merge if any of the 3 bots hasn't reviewed current HEAD (unless that bot is unavailable in the org). Never exceed 3 bot-kick iterations per PR per daily run.
+   - Never merge if any of the 3 bots hasn't reviewed current HEAD (unless that bot is unavailable in the org). Never merge while GitHub reports `DIRTY`, `BLOCKED`, `BEHIND`, or `UNSTABLE`. Never exceed 3 bot-kick iterations per PR per daily run.
 
 5. **Issue triage**
    - `gh issue list --state open --limit 50`

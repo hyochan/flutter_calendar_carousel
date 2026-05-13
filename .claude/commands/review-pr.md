@@ -31,7 +31,7 @@ PR="$1"
 gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
   -f 'reviewers[]=copilot-pull-request-reviewer' 2>/dev/null \
   || gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer" 2>/dev/null \
-  || gh pr edit "$PR" --add-reviewer "copilot" 2>/dev/null || true
+  || true
 
 gh pr comment "$PR" --body "/gemini review"
 
@@ -72,7 +72,8 @@ If any is true, jump to Step 6 — Request changes:
   - `.github/workflows/security-*.yml` — removed/weakened
 - Title or any commit contains `revert`
 - Test files under `test/` deleted without same-PR replacement
-- `mergeStateStatus` ∈ {DIRTY, BLOCKED, BEHIND}
+- `mergeStateStatus` ∈ {DIRTY, BLOCKED}
+- `mergeStateStatus == BEHIND` after one attempted update from `main` when the branch is repo-owned or maintainer edits are enabled.
 
 If checks are absent, queued, pending, or in progress, return `waiting-checks`
 for this run. Do not request changes for checks that have not completed.
@@ -93,7 +94,7 @@ Bot logins:
 | Bot | Login | Re-kick |
 |---|---|---|
 | Gemini | `gemini-code-assist[bot]` | `gh pr comment "$PR" --body "/gemini review"` |
-| Copilot | `copilot-pull-request-reviewer[bot]` | `gh api -X POST repos/$OWNER_REPO/pulls/$PR/requested_reviewers -f 'reviewers[]=copilot-pull-request-reviewer'` |
+| Copilot | review author `copilot-pull-request-reviewer[bot]`; reviewer slug `copilot-pull-request-reviewer` | `gh api -X POST repos/$OWNER_REPO/pulls/$PR/requested_reviewers -f 'reviewers[]=copilot-pull-request-reviewer'` |
 | CodeRabbit | `coderabbitai[bot]` | nothing — re-runs on push |
 
 ### 4a. Classify each bot against current HEAD
@@ -128,7 +129,7 @@ For each bot:
 
 ## Step 5 — Approve + auto-merge
 
-All preconditions must hold (§2 clean, §4 exit, no open human thread, all checks green, `mergeStateStatus` ∈ {CLEAN, HAS_HOOKS, UNSTABLE}):
+All preconditions must hold (§2 clean, §4 exit, no open human thread, all checks green, `mergeStateStatus` ∈ {CLEAN, HAS_HOOKS}):
 
 ```bash
 gh pr review "$PR" --approve --body "All automated reviewers quiet; merging."
