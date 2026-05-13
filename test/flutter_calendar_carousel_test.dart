@@ -105,12 +105,17 @@ void main() {
     WidgetTester tester,
   ) async {
     DateTime? pressedDay;
-    final blockedDay = DateTime.now().subtract(const Duration(days: 1));
+    final selectedDay = DateTime(2026, 5, 13);
+    final blockedDay = DateTime(2026, 5, 12, 23, 30);
     const inactiveStyle = TextStyle(color: Colors.purple);
 
     final carousel = CalendarCarousel(
       weekFormat: true,
       height: 200,
+      selectedDateTime: selectedDay,
+      targetDateTime: selectedDay,
+      minSelectedDate: DateTime(2026, 5),
+      maxSelectedDate: DateTime(2026, 5, 31, 23, 59),
       inactiveDates: [blockedDay],
       inactiveDaysTextStyle: inactiveStyle,
       inactiveWeekendTextStyle: inactiveStyle,
@@ -134,6 +139,37 @@ void main() {
     await tester.pump();
 
     expect(pressedDay, isNull);
+  });
+
+  testWidgets('minSelectedDate compares by calendar day', (
+    WidgetTester tester,
+  ) async {
+    DateTime? pressedDay;
+    final selectedDay = DateTime(2026, 5, 13);
+    final minDay = DateTime(2026, 5, 12, 23, 59);
+
+    final carousel = CalendarCarousel(
+      weekFormat: true,
+      height: 200,
+      selectedDateTime: selectedDay,
+      targetDateTime: selectedDay,
+      minSelectedDate: minDay,
+      maxSelectedDate: DateTime(2026, 5, 31),
+      onDayPressed: (date, event) {
+        pressedDay = date;
+      },
+    );
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(body: Container(child: carousel)),
+      ),
+    );
+
+    await tester.tap(find.text('12'));
+    await tester.pump();
+
+    expect(pressedDay, isNotNull);
+    expect(pressedDay?.day, 12);
   });
 
   testWidgets(

@@ -268,6 +268,7 @@ class _CalendarState<T extends EventInterface>
   int _pageNum = 0;
   late DateTime minDate;
   late DateTime maxDate;
+  late Set<DateTime> _inactiveDateSet;
 
   /// When FIRSTDAYOFWEEK is 0 in dart-intl, it represents Monday. However it is the second day in the arrays of Weekdays.
   /// Therefore we need to add 1 modulo 7 to pick the right weekday from intl. (cf. [GlobalMaterialLocalizations])
@@ -288,6 +289,7 @@ class _CalendarState<T extends EventInterface>
           DateTime.now().month,
           DateTime.now().day,
         );
+    _inactiveDateSet = _dateOnlySet(widget.inactiveDates);
 
     final selectedDateTime = widget.selectedDateTime;
     if (selectedDateTime != null) _selectedDate = selectedDateTime;
@@ -313,6 +315,10 @@ class _CalendarState<T extends EventInterface>
 
   @override
   void didUpdateWidget(CalendarCarousel<T> oldWidget) {
+    if (oldWidget.inactiveDates != widget.inactiveDates) {
+      _inactiveDateSet = _dateOnlySet(widget.inactiveDates);
+    }
+
     if (widget.targetDateTime != null && widget.targetDateTime != _targetDate) {
       _init();
       _setDate(pageNum: _pageNum);
@@ -876,19 +882,21 @@ class _CalendarState<T extends EventInterface>
   }
 
   bool _determineIsSelectable(DateTime date) {
-    if (date.millisecondsSinceEpoch < minDate.millisecondsSinceEpoch) {
+    final dateOnly = date.dateOnly;
+    if (dateOnly.isBefore(minDate.dateOnly)) {
       return false;
     }
-    if (date.millisecondsSinceEpoch > maxDate.millisecondsSinceEpoch) {
+    if (dateOnly.isAfter(maxDate.dateOnly)) {
       return false;
     }
-    if (widget.inactiveDates.any(
-      (inactiveDate) => inactiveDate.isSameDay(date),
-    )) {
+    if (_inactiveDateSet.contains(dateOnly)) {
       return false;
     }
     return true;
   }
+
+  Set<DateTime> _dateOnlySet(Iterable<DateTime> dates) =>
+      dates.map((date) => date.dateOnly).toSet();
 
   void _onDayPressed(DateTime picked) {
     if (!_determineIsSelectable(picked)) return;
@@ -1293,9 +1301,6 @@ class _CalendarState<T extends EventInterface>
   }
 }
 
-extension _DateTimeSameDay on DateTime {
-  bool isSameDay(DateTime otherDate) =>
-      otherDate.year == year &&
-      otherDate.month == month &&
-      otherDate.day == day;
+extension _DateTimeDateOnly on DateTime {
+  DateTime get dateOnly => DateTime(year, month, day);
 }
