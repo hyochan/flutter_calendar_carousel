@@ -28,9 +28,9 @@ If Copilot is NOT yet a requested reviewer AND the PR is not authored by a bot:
 OWNER_REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
 PR="$1"
 
-gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
-  -f 'reviewers[]=copilot-pull-request-reviewer' 2>/dev/null \
-  || gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer" 2>/dev/null \
+gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer" 2>/dev/null \
+  || gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
+    -f 'reviewers[]=copilot-pull-request-reviewer' 2>/dev/null \
   || true
 
 gh pr comment "$PR" --body "/gemini review"
@@ -83,7 +83,7 @@ for this run. Do not request changes for checks that have not completed.
 If `author.login` matches `dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends in `[bot]`:
 
 - Verify all checks green.
-- `gh pr review "$PR" --approve --body "Automated bot PR — auto-merging."`
+- `gh pr review "$PR" --approve --body "Automated bot PR — auto-merging." || true`
 - `gh pr merge "$PR" --auto --squash --delete-branch`
 - Skip the 3-bot loop — CI is the gate for bot PRs.
 
@@ -114,7 +114,7 @@ For each bot:
     - **Blocker** (security, correctness, API break) → add to Step 6 list, stop loop.
     - **Non-blocker** (style, nit) → acknowledge in top-level comment; continue.
   - If any blocker existed → Step 6 and stop.
-  - If no blockers → re-kick all 3, increment iteration. Max 3 iterations/run.
+  - If no blockers → acknowledge the nits once in the pass summary and proceed when all other gates are green. Do not keep re-kicking bots for non-blocking nits.
 - Any bot `reviewed_current_head == false` AND NOT `unavailable` → **wait**:
   - If this bot hasn't been kicked against HEAD_SHA yet, kick once.
   - Otherwise do nothing; return `waiting-bots`.

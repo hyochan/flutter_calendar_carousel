@@ -53,9 +53,9 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    ```bash
    OWNER_REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
    PR=<number>
-   gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
-     -f 'reviewers[]=copilot-pull-request-reviewer' 2>/dev/null \
-     || gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer" 2>/dev/null \
+   gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer" 2>/dev/null \
+     || gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
+       -f 'reviewers[]=copilot-pull-request-reviewer' 2>/dev/null \
      || true
    gh pr comment "$PR" --body "/gemini review"
    # CodeRabbit auto-fires on push — no manual action.
@@ -69,7 +69,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 
    For each PR:
    - **`isDraft == true`** → skip.
-   - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: verify all CI checks green → `gh pr review --approve` → `gh pr merge --auto --squash --delete-branch`. Do not run the 3-bot loop. CI is the gate.
+   - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: verify all CI checks green → `gh pr review --approve` (ignore "already approved" errors) → `gh pr merge --auto --squash --delete-branch`. Do not run the 3-bot loop. CI is the gate.
    - **Everything else** → run the full `/review-pr` flow:
      1. Step 0 prep if Copilot isn't a requested reviewer yet (assign + `/gemini review`).
      2. Step 1 fetch state (PR JSON, diff, checks, reviews, comments).
@@ -78,7 +78,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
         - All 3 bots (`gemini-code-assist[bot]`, `copilot-pull-request-reviewer[bot]`, `coderabbitai[bot]`) must have `reviewed_current_head == true` against HEAD_SHA, or be marked `unavailable` because the app/reviewer cannot be requested in this repo.
         - If any bot is still catching up and hasn't been kicked against HEAD_SHA → kick once, move on, return `waiting-bots` for this PR this run.
         - If all reviewed & clean → Step 5 approve + auto-merge.
-        - If all reviewed & has findings → classify (blocker vs. nit). Blocker → Step 6 request-changes. Otherwise re-kick, max 3 iterations per daily run.
+        - If all reviewed & has findings → classify (blocker vs. nit). Blocker → Step 6 request-changes. Non-blocking nits get one acknowledgement comment and do not force another review cycle; proceed when all other gates are green.
      5. Step 7 human threads:
         - Human replied in last 7 days and we haven't responded → reply substantively, return `waiting-human`.
         - Human hasn't replied in ≥ 7 days AND we already replied → autonomous resolve per Step 7 rules (request-changes or close-thread-and-merge).
