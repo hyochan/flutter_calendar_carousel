@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Review a GitHub PR under the 3-bot loop (Gemini + Copilot + CodeRabbit). Assign bots on open, watch their reviews, re-kick until quiet, then auto-merge. Human threads get 7-day patience before autonomous resolution. No human approval on clean PRs.
+description: Review a GitHub PR under the 3-bot loop (Gemini + Copilot + CodeRabbit). Assign bots on open, watch their reviews, re-kick until quiet, then auto-merge. Human threads get 14-day patience before autonomous resolution. No human approval on clean PRs.
 ---
 
 # /review-pr
