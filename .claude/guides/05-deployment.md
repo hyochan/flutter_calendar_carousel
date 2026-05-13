@@ -78,7 +78,7 @@ Triggered by `push: tags: ['v*']`. Runs:
 
 1. On pub.dev → package admin → "Automated publishing" → enable GitHub Actions publishing.
 2. Set repository to `hyochan/flutter_calendar_carousel`.
-3. Set tag pattern to `v{{version}}`.
+3. Set tag pattern to `v*`.
 4. Set allowed environment (blank is fine for this repo; optional `pub-dev` environment adds a review gate).
 5. Confirm the workflow has `permissions: { id-token: write }` at job level.
 6. Only after 1–5: remove the `if: false` guard in `publish.yml` (or uncomment the job) and land that change.

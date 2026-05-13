@@ -28,7 +28,7 @@ If Copilot is NOT yet a requested reviewer AND the PR is not authored by a bot:
 OWNER_REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
 PR="$1"
 
-gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer[bot]" 2>/dev/null \
+gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer[bot]" \
   || gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
     -f 'reviewers[]=copilot-pull-request-reviewer[bot]'
 
