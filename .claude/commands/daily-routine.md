@@ -10,7 +10,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 
 1. **Repository freshness & tracking**
    - Fetch latest remote state first: `git fetch origin main --tags --prune`.
-   - Run the sweep against latest `origin/main`. If the mounted checkout has local changes or is behind, do not overwrite it; use `git worktree add <unique-temp-path> origin/main` to create a clean temporary worktree and report the local dirty/behind state.
+   - Run the sweep against latest `origin/main`. If the mounted checkout has local changes or is behind, do not overwrite it; create a unique temporary path with `TEMP_WORKTREE=$(mktemp -d)` and run `git worktree add "$TEMP_WORKTREE" origin/main`, then report the local dirty/behind state.
    - Remove any temporary worktree created for the sweep before the run exits. If cleanup fails, report the path as a follow-up instead of leaving it implicit.
    - Record commit SHA, Flutter/Dart version, latest tag, commits since tag, and open issue/PR counts.
    - Use GitHub issues for recurring blockers: red main, failed dependency bumps, Flutter stable regressions, and CI/release/publish failures.
@@ -72,15 +72,15 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    - **`isDraft == true`** → skip.
    - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: verify all CI checks green → `gh pr review "$PR" --approve --body "Automated bot PR — auto-merging." || true` → `gh pr merge "$PR" --auto --squash --delete-branch`. If checks are missing, pending, failed, cancelled, or timed out, record `skipped(bot-bypass-failed)` and do not approve. Do not run the 3-bot loop. CI is the gate.
    - **Everything else** → run the full `/review-pr` flow:
-    1. Step 0 prep if Copilot isn't a requested reviewer yet (assign + `/gemini review for $HEAD_SHA`).
-     2. Step 1 fetch state (PR JSON, diff, checks, reviews, comments).
-    3. Step 2 short-circuit gates — if any failed/cancelled check or guarded blocker hits → Step 6 request-changes, stop. If checks are pending or missing, wait and report `waiting-checks`; do not request changes for CI that has not run yet. If the branch is merely `BEHIND`, update it from `main` via `gh pr update-branch "$PR"` when the branch is repo-owned or maintainer edits are enabled; only request changes if that update fails or creates conflicts.
-     4. Step 4 bot-loop:
-        - All 3 bots (`gemini-code-assist[bot]`, `copilot-pull-request-reviewer[bot]`, `coderabbitai[bot]`) must have `reviewed_current_head == true` against HEAD_SHA, or be marked `unavailable` because the app/reviewer cannot be requested in this repo.
-        - If any bot is still catching up and hasn't been kicked against HEAD_SHA → kick once, move on, return `waiting-bots` for this PR this run.
-        - If all reviewed & clean → Step 5 approve + auto-merge.
-        - If all reviewed & has findings → classify (blocker vs. nit). Blocker → Step 6 request-changes. Non-blocking nits get one acknowledgement comment and do not force another review cycle; proceed when all other gates are green.
-     5. Step 7 human threads:
+     - Step 0 prep if Copilot isn't a requested reviewer yet (assign + `/gemini review for $HEAD_SHA`).
+     - Step 1 fetch state (PR JSON, diff, checks, reviews, comments).
+     - Step 2 short-circuit gates — if any failed/cancelled check or guarded blocker hits → Step 6 request-changes, stop. If checks are pending or missing, wait and report `waiting-checks`; do not request changes for CI that has not run yet. If the branch is merely `BEHIND`, update it from `main` via `gh pr update-branch "$PR"` when the branch is repo-owned or maintainer edits are enabled; only request changes if that update fails or creates conflicts.
+     - Step 4 bot-loop:
+       - All 3 bots (`gemini-code-assist[bot]`, `copilot-pull-request-reviewer[bot]`, `coderabbitai[bot]`) must have `reviewed_current_head == true` against HEAD_SHA, or be marked `unavailable` because the app/reviewer cannot be requested in this repo.
+       - If any bot is still catching up and hasn't been kicked against HEAD_SHA → kick once, move on, return `waiting-bots` for this PR this run.
+       - If all reviewed & clean → Step 5 approve + auto-merge.
+       - If all reviewed & has findings → classify (blocker vs. nit). Blocker → Step 6 request-changes. Non-blocking nits get one acknowledgement comment and do not force another review cycle; exit loop to Step 5 when all other gates are green.
+     - Step 7 human threads:
        - Human replied in last 14 days and we haven't responded → reply substantively, return `waiting-human`.
        - Human hasn't replied in ≥ 14 days AND we already replied → add a stale warning label/comment first, then autonomously resolve per Step 7 rules only if the thread remains unanswered.
    - Never merge if any of the 3 bots hasn't reviewed current HEAD (unless that bot is unavailable in the org). Never merge while GitHub reports `DIRTY`, `BLOCKED`, `BEHIND`, or `UNSTABLE`. Never exceed 3 bot-kick iterations per PR per daily run.

@@ -113,7 +113,7 @@ For each bot:
     - **Blocker** (security, correctness, API break) → add to Step 6 list, stop loop.
     - **Non-blocker** (style, nit) → acknowledge in top-level comment; continue.
   - If any blocker existed → Step 6 and stop.
-  - If no blockers → acknowledge the nits once in the pass summary and proceed when all other gates are green. Do not keep re-kicking bots for non-blocking nits.
+  - If no blockers → acknowledge the nits once in the pass summary and exit loop to Step 5 when all other gates are green. Do not keep re-kicking bots for non-blocking nits.
 - Any bot `reviewed_current_head == false` AND NOT `unavailable` → **wait**:
   - If this bot hasn't been kicked against HEAD_SHA yet, kick once.
   - Otherwise do nothing; return `waiting-bots`.
