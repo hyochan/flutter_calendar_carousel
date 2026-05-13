@@ -64,7 +64,7 @@ If any is true, jump to Step 6 — Request changes:
   - `lib/flutter_calendar_carousel.dart` — any rename/removal of an exported class, typedef, or public field on `CalendarCarousel<T>` → human review (public API surface)
   - `lib/classes/**` — any removal or rename in `EventInterface`, `Event`, `EventList`, `MarkedDate`, `MultipleMarkedDates` (public data types) → human review
   - `lib/src/default_styles.dart` — any change to default `TextStyle` / `Color` values (globally visible to every downstream user) → human review
-  - `pubspec.yaml` — any new non-dev dependency that isn't from a pub.dev verified publisher → human review; any change to `environment: sdk:` constraint → human review; any manual `version:` bump (release workflow owns this) → human review
+  - `pubspec.yaml` — any new non-dev dependency that isn't from a pub.dev verified publisher → human review; any change to `environment: sdk:` constraint → human review; any manual `version:` bump (release workflow owns this) → human review; any addition or modification of `dependency_overrides` → human review
   - `analysis_options.yaml` — disabling lint rules or removing `flutter_lints` → human review
   - `.github/workflows/release.yml`, `.github/workflows/publish.yml`, `.github/workflows/auto-release.yml` — any edit → human review (tag-format, OIDC, and release logic are load-bearing)
   - `.github/workflows/security-*.yml` — removed/weakened
