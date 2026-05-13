@@ -8,13 +8,13 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 
 ## Daily (run every weekday morning)
 
-0. **Repository freshness & tracking**
+1. **Repository freshness & tracking**
    - Fetch latest remote state first: `git fetch origin main --tags --prune`.
    - Run the sweep against latest `origin/main`. If the mounted checkout has local changes or is behind, do not overwrite it; use a clean temporary worktree at `origin/main` and report the local dirty/behind state.
    - Record commit SHA, Flutter/Dart version, latest tag, commits since tag, and open issue/PR counts.
    - Use GitHub issues for recurring blockers: red main, failed dependency bumps, Flutter stable regressions, and CI/release/publish failures.
 
-0a. **Autonomous maintenance task loop**
+2. **Autonomous maintenance task loop**
    - Build a daily work queue from failed sweep steps, actionable issues, PR blockers that can be fixed in the base repo, dependency/Flutter drift, CI/release/publish failures, and automation gaps.
    - Split work into small branches. Use names like `codex/<area>-YYYYMMDD` or `chore/deps-YYYYMMDD`.
    - Implement the smallest safe change, then run the relevant verification. Minimum for product changes: `flutter pub get`, `flutter analyze`, `dart format --set-exit-if-changed .`, `flutter test --coverage`, and `dart pub publish --dry-run`.
@@ -23,7 +23,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    - Never push directly to `main`. Never batch unrelated fixes. Never weaken lint, CI, release, publish, or security gates to make a PR pass.
    - Do not edit contributor PR branches unless the author explicitly requested/allowed maintainer edits; create repo-owned fix PRs instead.
 
-1. **Dependency check**
+3. **Dependency check**
    - `flutter pub outdated`
    - `flutter pub outdated --json`
    - Note direct/dev packages with newer compatible or resolvable versions.
@@ -31,18 +31,18 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    - If a direct/dev package remains blocked by SDK constraints or a major upgrade for more than one run, create/update `maintenance: dependency upgrade blocked`.
    - Do not blindly upgrade from here. Safe direct/dev updates can be queued into the autonomous task loop; grouped dependency PRs normally happen in the weekly job.
 
-2. **Code quality**
+4. **Code quality**
    - `flutter analyze`
    - `dart format --set-exit-if-changed .`
    - `dart pub publish --dry-run`
    - Analyze and format must pass. If they don't, surface the failure, open/update `daily-routine: analyze/format red on main`, and stop the routine.
    - Report publish dry-run as the package publishability/breaking-risk smoke check.
 
-3. **Tests**
+5. **Tests**
    - `flutter test --coverage`
    - Report pass/fail counts. If any test fails, open (or update) a tracking issue with the failure output.
 
-4. **PR review & auto-merge (3-bot loop)**
+6. **PR review & auto-merge (3-bot loop)**
 
    See `.claude/commands/review-pr.md` for the canonical bot-loop spec. This section is the daily entry point for it.
 
@@ -69,7 +69,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 
    For each PR:
    - **`isDraft == true`** → skip.
-   - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: verify all CI checks green → `gh pr review --approve` (ignore "already approved" errors) → `gh pr merge --auto --squash --delete-branch`. Do not run the 3-bot loop. CI is the gate.
+   - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: verify all CI checks green → `gh pr review --approve` (ignore "already approved" errors) → `gh pr merge --auto --squash --delete-branch`. If checks are missing, pending, failed, cancelled, or timed out, record `skipped(bot-bypass-failed)` and do not approve. Do not run the 3-bot loop. CI is the gate.
    - **Everything else** → run the full `/review-pr` flow:
      1. Step 0 prep if Copilot isn't a requested reviewer yet (assign + `/gemini review`).
      2. Step 1 fetch state (PR JSON, diff, checks, reviews, comments).
@@ -84,7 +84,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
         - Human hasn't replied in ≥ 7 days AND we already replied → autonomous resolve per Step 7 rules (request-changes or close-thread-and-merge).
    - Never merge if any of the 3 bots hasn't reviewed current HEAD (unless that bot is unavailable in the org). Never merge while GitHub reports `DIRTY`, `BLOCKED`, `BEHIND`, or `UNSTABLE`. Never exceed 3 bot-kick iterations per PR per daily run.
 
-5. **Issue triage**
+7. **Issue triage**
    - `gh issue list --state open --limit 50`
    - `gh pr list --state open --limit 50`
    - Look for:
