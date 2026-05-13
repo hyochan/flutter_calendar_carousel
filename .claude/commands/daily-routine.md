@@ -10,7 +10,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 
 1. **Repository freshness & tracking**
    - Fetch latest remote state first: `git fetch origin main --tags --prune`.
-   - Run the sweep against latest `origin/main`. If the mounted checkout has local changes or is behind, do not overwrite it; create a unique temporary path with `TEMP_WORKTREE=$(mktemp -d); rmdir "$TEMP_WORKTREE"`, run `git worktree add --detach "$TEMP_WORKTREE" origin/main`, and `cd "$TEMP_WORKTREE"` before all subsequent sweep steps. Report the local dirty/behind state.
+   - Run the sweep against latest `origin/main`. If the mounted checkout has local changes or is behind, do not overwrite it; create a unique temporary path with `TEMP_WORKTREE=$(mktemp -d) && rmdir "$TEMP_WORKTREE"`, run `git worktree add --detach "$TEMP_WORKTREE" origin/main`, and `cd "$TEMP_WORKTREE"` before all subsequent sweep steps. Report the local dirty/behind state.
    - Remove any temporary worktree created for the sweep before the run exits. If cleanup fails, report the path as a follow-up instead of leaving it implicit.
    - Record commit SHA, Flutter/Dart version, latest tag, commits since tag, and open issue/PR counts.
    - Use GitHub issues for recurring blockers: red main, failed dependency bumps, Flutter stable regressions, and CI/release/publish failures.
@@ -41,7 +41,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 
 5. **Tests**
    - `flutter test --coverage`
-   - Calculate coverage from `coverage/lcov.info` after the test run, for example by summing `LH:` and `LF:` lines and reporting `(LF > 0 ? LH / LF * 100 : 0)`.
+   - Calculate coverage from `coverage/lcov.info` after the test run by summing the numeric `LH:` values as `sum(LH)` and `LF:` values as `sum(LF)`, then reporting `(sum(LF) > 0 ? sum(LH) / sum(LF) * 100 : 0)`.
    - Report pass/fail counts. If any test fails, open (or update) a tracking issue with the failure output.
 
 6. **PR review & auto-merge (3-bot loop)**
