@@ -54,9 +54,9 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    ```bash
    OWNER_REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
    PR=<number>
-   gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer" 2>/dev/null \
+   gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer[bot]" 2>/dev/null \
      || gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
-       -f 'reviewers[]=copilot-pull-request-reviewer'
+       -f 'reviewers[]=copilot-pull-request-reviewer[bot]'
    gh pr comment "$PR" --body "/gemini review"
    # CodeRabbit auto-fires on push — no manual action.
    ```
@@ -69,7 +69,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 
    For each PR:
    - **`isDraft == true`** → skip.
-   - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: verify all CI checks green → `gh pr review --approve` (ignore "already approved" errors) → `gh pr merge --auto --squash --delete-branch`. If checks are missing, pending, failed, cancelled, or timed out, record `skipped(bot-bypass-failed)` and do not approve. Do not run the 3-bot loop. CI is the gate.
+   - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: verify all CI checks green → `gh pr review --approve || true` (ignore "already approved" errors) → `gh pr merge --auto --squash --delete-branch`. If checks are missing, pending, failed, cancelled, or timed out, record `skipped(bot-bypass-failed)` and do not approve. Do not run the 3-bot loop. CI is the gate.
    - **Everything else** → run the full `/review-pr` flow:
      1. Step 0 prep if Copilot isn't a requested reviewer yet (assign + `/gemini review`).
      2. Step 1 fetch state (PR JSON, diff, checks, reviews, comments).
