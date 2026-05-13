@@ -1,3 +1,9 @@
+## [2.6.0] - 2026-05-13
+
+- docs: add autonomous maintenance runbooks
+- feat: support inactive dates
+- feat: support uppercase weekday labels
+
 ## [Unreleased]
 
 - Add `upperCaseWeekDays` to render weekday labels in uppercase, including values passed to custom weekday builders ([#392](https://github.com/hyochan/flutter_calendar_carousel/pull/392)).
