@@ -57,7 +57,7 @@ Keep `OWNER_REPO`, `PR`, and `HEAD_SHA` in scope for the later bot kick and merg
 If any is true, jump to Step 6 — Request changes:
 
 - `isDraft == true`
-- Any completed check conclusion ∉ {SUCCESS, SKIPPED, NEUTRAL}
+- Any completed check conclusion ∉ {SUCCESS, SKIPPED}
 - `baseRefName != main`
 - Any commit subject contains `!:` OR body contains `BREAKING CHANGE:`
 - **Project-specific guarded paths (flutter_calendar_carousel):**

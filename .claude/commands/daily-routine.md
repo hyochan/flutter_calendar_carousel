@@ -70,7 +70,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 
    For each PR:
    - **`isDraft == true`** → skip.
-   - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: fetch `statusCheckRollup` and verify every reported check is completed with `SUCCESS`, `SKIPPED`, or `NEUTRAL` before approval → `gh pr review "$PR" --approve --body "Automated bot PR — auto-merging." || true` → `gh pr merge "$PR" --auto --squash --delete-branch`. If checks are missing, pending, failed, cancelled, or timed out, record `skipped(bot-bypass-failed)` and do not approve. Do not run the 3-bot loop. CI is the gate.
+   - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: fetch `statusCheckRollup` and verify every reported check is completed with `SUCCESS` or `SKIPPED` before approval → `gh pr review "$PR" --approve --body "Automated bot PR — auto-merging." || true` → `gh pr merge "$PR" --auto --squash --delete-branch`. If checks are missing, pending, failed, cancelled, or timed out, record `skipped(bot-bypass-failed)` and do not approve. Do not run the 3-bot loop. CI is the gate.
    - **Everything else** → run the full `/review-pr` flow:
      - Step 0 prep if Copilot isn't a requested reviewer yet (assign + `/gemini review for $HEAD_SHA`).
      - Step 1 fetch state (PR JSON, diff, checks, reviews, comments).
