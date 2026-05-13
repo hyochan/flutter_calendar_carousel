@@ -1,3 +1,7 @@
+## [Unreleased]
+
+- Document the autonomous maintenance runbooks, PR review loop, and deployment workflow expectations ([#402](https://github.com/hyochan/flutter_calendar_carousel/pull/402)).
+
 ## [2.5.7] - 2026-04-27
 
 - chore(ci): remove one-shot format/apply-fix workflows

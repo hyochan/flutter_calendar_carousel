@@ -7,12 +7,14 @@ description: Review a GitHub PR under the 3-bot loop (Gemini + Copilot + CodeRab
 
 End state for every PR this skill touches:
 
-1. Copilot is a requested reviewer.
+1. Copilot is a requested reviewer, or the request failed because that bot is
+   unavailable in this repository and the failure is logged.
 2. Gemini has posted at least one review against the current HEAD (triggered via `/gemini review` comment).
-3. CodeRabbit has posted a summary against the current HEAD (auto-triggered by its GitHub App on push).
+3. CodeRabbit has posted a summary against the current HEAD (auto-triggered by its GitHub App on push), or CodeRabbit is unavailable in this repository and logged.
 4. No bot has actionable feedback outstanding against the current HEAD.
 5. No human thread is unanswered AND either the human has replied, or the thread is ≥ 7 days old and we have resolved autonomously.
-6. All status checks green.
+6. All reported status checks are green. Missing or pending checks are a wait
+   state, not a change request.
 
 Only when all six are true do we approve + auto-merge.
 
@@ -36,7 +38,9 @@ gh pr comment "$PR" --body "/gemini review"
 # CodeRabbit: no manual action — configured via .coderabbit.yaml.
 ```
 
-If any call fails (app not installed in org), log `unavailable` for that bot and skip waiting on it; do not block the PR.
+If a bot request fails because the app/reviewer is unavailable in this repo
+(404/403/422 from the reviewer request path), log `unavailable` for that bot
+and skip waiting on it; do not block the PR on that bot.
 
 ## Step 1 — Fetch state
 
@@ -55,7 +59,7 @@ Extract: `HEAD_SHA`, `HEAD_PUSHED_AT`, checks map, all reviews (login/state/subm
 If any is true, jump to Step 6 — Request changes:
 
 - `isDraft == true`
-- Any check conclusion ∉ {SUCCESS, SKIPPED, NEUTRAL}
+- Any completed check conclusion ∉ {SUCCESS, SKIPPED, NEUTRAL}
 - `baseRefName != main`
 - Any commit subject contains `!:` OR body contains `BREAKING CHANGE:`
 - **Project-specific guarded paths (flutter_calendar_carousel):**
@@ -69,6 +73,9 @@ If any is true, jump to Step 6 — Request changes:
 - Title or any commit contains `revert`
 - Test files under `test/` deleted without same-PR replacement
 - `mergeStateStatus` ∈ {DIRTY, BLOCKED, BEHIND}
+
+If checks are absent, queued, pending, or in progress, return `waiting-checks`
+for this run. Do not request changes for checks that have not completed.
 
 ## Step 3 — Bot bypass (PRs authored by bots)
 
@@ -95,7 +102,7 @@ For each bot:
 
 - `reviewed_current_head`: true if latest review/comment has `commit_id == HEAD_SHA` OR `submitted_at >= HEAD_PUSHED_AT`.
 - `has_findings`: true if the latest content contains `state == "CHANGES_REQUESTED"`, inline severity markers (🛑 / ⚠️ / `Critical` / `Major` / `Nit:` / "Suggested change"), or TODO/FIXME.
-- `unavailable`: true if the bot's app isn't installed (kick returned 404/403).
+- `unavailable`: true if the bot's app or reviewer cannot be requested in this repo (kick returned 404/403/422).
 
 ### 4b. Decision
 
@@ -159,7 +166,7 @@ Scan for unresolved human threads (non-bot authors):
 PR #<N> <author> <result> [iter=<K>] [waiting=<bots|human>] [checks=<status>]
 ```
 
-Result ∈ merged | requested-changes | waiting-bots | waiting-human | skipped(draft|bot-bypass-failed).
+Result ∈ merged | requested-changes | waiting-bots | waiting-checks | waiting-human | skipped(draft|bot-bypass-failed).
 
 ## Hard rules
 
@@ -168,7 +175,7 @@ Result ∈ merged | requested-changes | waiting-bots | waiting-human | skipped(d
 3. Never exceed 3 kicks per bot per daily run.
 4. Never treat a human's question as answered by our previous reply unless > 7 days elapsed.
 5. Never skip §2 gates because bots approved.
-6. Never open a PR from this skill.
+6. Never open a PR from this skill. The daily routine may open a PR before invoking this review loop; `/review-pr` itself only reviews an existing PR.
 7. Never re-request review from a bot that already reviewed clean — that's the exit condition.
 
 ## Tuning knobs

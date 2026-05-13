@@ -47,6 +47,9 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    See `.claude/commands/review-pr.md` for the canonical bot-loop spec. This section is the daily entry point for it.
 
    **When we open a PR from this routine** (deps bump, fix, anything):
+   The daily routine may open scoped maintenance PRs before invoking the
+   review loop. The standalone `/review-pr` command never opens PRs by itself.
+
    ```bash
    OWNER_REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
    PR=<number>
@@ -60,7 +63,8 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 
    **Reviewing every open PR**:
    ```bash
-   gh pr list --state open --json number,isDraft,author,headRefOid --repo hyochan/flutter_calendar_carousel
+   OWNER_REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
+   gh pr list --state open --json number,isDraft,author,headRefOid --repo "$OWNER_REPO"
    ```
 
    For each PR:
@@ -69,9 +73,9 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    - **Everything else** → run the full `/review-pr` flow:
      1. Step 0 prep if Copilot isn't a requested reviewer yet (assign + `/gemini review`).
      2. Step 1 fetch state (PR JSON, diff, checks, reviews, comments).
-     3. Step 2 short-circuit gates — if any hit → Step 6 request-changes, stop.
+     3. Step 2 short-circuit gates — if any failed/cancelled check or guarded blocker hits → Step 6 request-changes, stop. If checks are pending or missing, wait and report `waiting-checks`; do not request changes for CI that has not run yet.
      4. Step 4 bot-loop:
-        - All 3 bots (`gemini-code-assist[bot]`, `copilot-pull-request-reviewer[bot]`, `coderabbitai[bot]`) must have `reviewed_current_head == true` against HEAD_SHA, or be marked `unavailable`.
+        - All 3 bots (`gemini-code-assist[bot]`, `copilot-pull-request-reviewer[bot]`, `coderabbitai[bot]`) must have `reviewed_current_head == true` against HEAD_SHA, or be marked `unavailable` because the app/reviewer cannot be requested in this repo.
         - If any bot is still catching up and hasn't been kicked against HEAD_SHA → kick once, move on, return `waiting-bots` for this PR this run.
         - If all reviewed & clean → Step 5 approve + auto-merge.
         - If all reviewed & has findings → classify (blocker vs. nit). Blocker → Step 6 request-changes. Otherwise re-kick, max 3 iterations per daily run.
