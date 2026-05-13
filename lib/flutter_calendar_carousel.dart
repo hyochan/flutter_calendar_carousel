@@ -116,6 +116,12 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
   final Color weekDayBackgroundColor;
   final bool weekFormat;
   final bool showWeekDays;
+
+  /// Whether to render weekday labels in uppercase.
+  ///
+  /// The transformed label is also passed to [customWeekDayBuilder].
+  final bool upperCaseWeekDays;
+
   final bool showHeader;
   final bool showHeaderButton;
   final MultipleMarkedDates? multipleMarkedDates;
@@ -201,6 +207,7 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
     this.customWeekDayBuilder,
     this.customDayBuilder,
     this.showWeekDays = true,
+    this.upperCaseWeekDays = false,
     this.weekFormat = false,
     this.showHeader = true,
     this.showHeaderButton = true,
@@ -395,6 +402,7 @@ class _CalendarState<T extends EventInterface>
             firstDayOfWeek,
             widget.customWeekDayBuilder,
             showWeekdays: widget.showWeekDays,
+            upperCaseWeekdays: widget.upperCaseWeekDays,
             weekdayFormat: widget.weekDayFormat,
             weekdayMargin: widget.weekDayMargin,
             weekdayPadding: widget.weekDayPadding,
