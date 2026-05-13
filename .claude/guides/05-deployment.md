@@ -81,7 +81,6 @@ Triggered by `push: tags: ['v*']`. Runs:
 3. Set tag pattern to `v*`.
 4. Set allowed environment (blank is fine for this repo; optional `pub-dev` environment adds a review gate).
 5. Confirm the workflow has `permissions: { id-token: write }` at job level.
-6. Only after 1–5: remove the `if: false` guard in `publish.yml` (or uncomment the job) and land that change.
 
 `publish.yml` is enabled and will run on every `v*` tag push. If pub.dev OIDC is not yet configured on the package's admin page, the first auto-release will fail at the `dart pub publish --force` step with an auth error — that is the signal to finish the pub.dev-side setup. Until then, the tag + GitHub Release will still be created; only the pub.dev upload step will fail.
 
