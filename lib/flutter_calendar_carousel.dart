@@ -281,14 +281,7 @@ class _CalendarState<T extends EventInterface>
     super.initState();
     initializeDateFormatting();
 
-    minDate = widget.minSelectedDate ?? DateTime(2018);
-    maxDate =
-        widget.maxSelectedDate ??
-        DateTime(
-          DateTime.now().year + 1,
-          DateTime.now().month,
-          DateTime.now().day,
-        );
+    _setMinMaxDates();
     _inactiveDateSet = _dateOnlySet(widget.inactiveDates);
 
     final selectedDateTime = widget.selectedDateTime;
@@ -315,11 +308,20 @@ class _CalendarState<T extends EventInterface>
 
   @override
   void didUpdateWidget(CalendarCarousel<T> oldWidget) {
+    final previousMinDate = minDate;
+    final previousMaxDate = maxDate;
+    _setMinMaxDates();
+
     if (oldWidget.inactiveDates != widget.inactiveDates) {
       _inactiveDateSet = _dateOnlySet(widget.inactiveDates);
     }
 
-    if (widget.targetDateTime != null && widget.targetDateTime != _targetDate) {
+    final targetDateChanged =
+        widget.targetDateTime != null && widget.targetDateTime != _targetDate;
+    final dateRangeChanged =
+        previousMinDate != minDate || previousMaxDate != maxDate;
+
+    if (targetDateChanged || dateRangeChanged) {
       _init();
       _setDate(pageNum: _pageNum);
     }
@@ -511,7 +513,7 @@ class _CalendarState<T extends EventInterface>
     return Container(
       margin: EdgeInsets.all(widget.dayPadding),
       child: GestureDetector(
-        onLongPress: () => _onDayLongPressed(now),
+        onLongPress: isSelectable ? () => _onDayLongPressed(now) : null,
         child: TextButton(
           style: TextButton.styleFrom(
             shape:
@@ -878,6 +880,8 @@ class _CalendarState<T extends EventInterface>
   }
 
   void _onDayLongPressed(DateTime picked) {
+    if (!_determineIsSelectable(picked)) return;
+
     widget.onDayLongPressed?.call(picked);
   }
 
@@ -897,6 +901,17 @@ class _CalendarState<T extends EventInterface>
 
   Set<DateTime> _dateOnlySet(Iterable<DateTime> dates) =>
       dates.map((date) => date.dateOnly).toSet();
+
+  void _setMinMaxDates() {
+    minDate = widget.minSelectedDate ?? DateTime(2018);
+    maxDate =
+        widget.maxSelectedDate ??
+        DateTime(
+          DateTime.now().year + 1,
+          DateTime.now().month,
+          DateTime.now().day,
+        );
+  }
 
   void _onDayPressed(DateTime picked) {
     if (!_determineIsSelectable(picked)) return;
@@ -919,6 +934,8 @@ class _CalendarState<T extends EventInterface>
     );
 
     if (selected != null) {
+      if (!_determineIsSelectable(selected)) return;
+
       // updating selected date range based on selected week
       setState(() {
         _selectedDate = selected;

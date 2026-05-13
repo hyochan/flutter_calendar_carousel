@@ -105,6 +105,7 @@ void main() {
     WidgetTester tester,
   ) async {
     DateTime? pressedDay;
+    DateTime? longPressedDay;
     final selectedDay = DateTime(2026, 5, 13);
     final blockedDay = DateTime(2026, 5, 12, 23, 30);
     const inactiveStyle = TextStyle(color: Colors.purple);
@@ -121,6 +122,9 @@ void main() {
       inactiveWeekendTextStyle: inactiveStyle,
       onDayPressed: (date, event) {
         pressedDay = date;
+      },
+      onDayLongPressed: (date) {
+        longPressedDay = date;
       },
     );
     await tester.pumpWidget(
@@ -139,6 +143,11 @@ void main() {
     await tester.pump();
 
     expect(pressedDay, isNull);
+
+    await tester.longPress(blockedFinder);
+    await tester.pump();
+
+    expect(longPressedDay, isNull);
   });
 
   testWidgets('minSelectedDate compares by calendar day', (
@@ -170,6 +179,39 @@ void main() {
 
     expect(pressedDay, isNotNull);
     expect(pressedDay?.day, 12);
+  });
+
+  testWidgets('updates minSelectedDate when widget changes', (
+    WidgetTester tester,
+  ) async {
+    DateTime? pressedDay;
+    final selectedDay = DateTime(2026, 5, 13);
+
+    Widget buildCalendar(DateTime minSelectedDate) {
+      return MaterialApp(
+        home: Scaffold(
+          body: CalendarCarousel(
+            weekFormat: true,
+            height: 200,
+            selectedDateTime: selectedDay,
+            targetDateTime: selectedDay,
+            minSelectedDate: minSelectedDate,
+            maxSelectedDate: DateTime(2026, 5, 31),
+            onDayPressed: (date, event) {
+              pressedDay = date;
+            },
+          ),
+        ),
+      );
+    }
+
+    await tester.pumpWidget(buildCalendar(DateTime(2026, 5, 12)));
+    await tester.pumpWidget(buildCalendar(DateTime(2026, 5, 13)));
+
+    await tester.tap(find.text('12'));
+    await tester.pump();
+
+    expect(pressedDay, isNull);
   });
 
   testWidgets(
