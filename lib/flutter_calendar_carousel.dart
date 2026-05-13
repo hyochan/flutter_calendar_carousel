@@ -911,14 +911,10 @@ class _CalendarState<T extends EventInterface>
       dates.map((date) => date.dateOnly).toSet();
 
   void _setMinMaxDates() {
+    final now = DateTime.now();
     minDate = (widget.minSelectedDate ?? DateTime(2018)).dateOnly;
     maxDate =
-        (widget.maxSelectedDate ??
-                DateTime(
-                  DateTime.now().year + 1,
-                  DateTime.now().month,
-                  DateTime.now().day,
-                ))
+        (widget.maxSelectedDate ?? DateTime(now.year + 1, now.month, now.day))
             .dateOnly;
   }
 
