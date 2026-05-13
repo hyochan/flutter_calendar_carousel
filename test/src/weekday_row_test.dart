@@ -114,6 +114,61 @@ void main() {
     expect(find.text('Sat'), findsOneWidget);
   });
 
+  testWidgets('uppercases default weekday labels', (WidgetTester tester) async {
+    await tester.pumpWidget(
+      wrapped(
+        WeekdayRow(
+          0,
+          null,
+          weekdayPadding: EdgeInsets.zero,
+          weekdayBackgroundColor: Colors.transparent,
+          showWeekdays: true,
+          weekdayFormat: WeekdayFormat.short,
+          weekdayMargin: margin,
+          weekdayTextStyle: null,
+          localeDate: locale,
+          upperCaseWeekdays: true,
+        ),
+      ),
+    );
+
+    expect(find.text('SUN'), findsOneWidget);
+    expect(find.text('MON'), findsOneWidget);
+    expect(find.text('Sun'), findsNothing);
+
+    final sundayText = tester.widget<Text>(find.text('SUN'));
+    expect(sundayText.semanticsLabel, 'Sun');
+  });
+
+  testWidgets('passes uppercase labels to custom weekday builder', (
+    WidgetTester tester,
+  ) async {
+    final builtLabels = <String>[];
+
+    await tester.pumpWidget(
+      wrapped(
+        WeekdayRow(
+          0,
+          (weekday, weekdayName) {
+            builtLabels.add(weekdayName);
+            return Text('$weekday:$weekdayName');
+          },
+          weekdayPadding: EdgeInsets.zero,
+          weekdayBackgroundColor: Colors.transparent,
+          showWeekdays: true,
+          weekdayFormat: WeekdayFormat.short,
+          weekdayMargin: margin,
+          weekdayTextStyle: null,
+          localeDate: locale,
+          upperCaseWeekdays: true,
+        ),
+      ),
+    );
+
+    expect(builtLabels, containsAll(['SUN', 'MON', 'TUE']));
+    expect(find.text('0:SUN'), findsOneWidget);
+  });
+
   testWidgets('test row does not render', (WidgetTester tester) async {
     final emptyContainer = WeekdayRow(
       0,

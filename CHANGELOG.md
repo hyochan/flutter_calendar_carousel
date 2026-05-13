@@ -1,5 +1,6 @@
 ## [Unreleased]
 
+- Add `upperCaseWeekDays` to render weekday labels in uppercase, including values passed to custom weekday builders ([#392](https://github.com/hyochan/flutter_calendar_carousel/pull/392)).
 - Add `inactiveDates` to render specific dates as non-selectable and ignore taps on those dates ([#395](https://github.com/hyochan/flutter_calendar_carousel/pull/395)).
 
 ## [2.5.7] - 2026-04-27
