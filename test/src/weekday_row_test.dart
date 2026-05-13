@@ -135,6 +135,9 @@ void main() {
     expect(find.text('SUN'), findsOneWidget);
     expect(find.text('MON'), findsOneWidget);
     expect(find.text('Sun'), findsNothing);
+
+    final sundayText = tester.widget<Text>(find.text('SUN'));
+    expect(sundayText.semanticsLabel, 'Sun');
   });
 
   testWidgets('passes uppercase labels to custom weekday builder', (

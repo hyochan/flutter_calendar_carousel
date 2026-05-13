@@ -30,7 +30,11 @@ class WeekdayRow extends StatelessWidget {
   final int firstDayOfWeek;
   final bool upperCaseWeekdays;
 
-  Widget _weekdayContainer(int weekday, String weekDayName) {
+  Widget _weekdayContainer(
+    int weekday,
+    String weekDayName, {
+    String? semanticsLabel,
+  }) {
     final customWeekdayBuilder = this.customWeekdayBuilder;
     return customWeekdayBuilder != null
         ? customWeekdayBuilder(weekday, weekDayName)
@@ -47,7 +51,7 @@ class WeekdayRow extends StatelessWidget {
                   style: defaultWeekdayTextStyle,
                   child: Text(
                     weekDayName,
-                    semanticsLabel: weekDayName,
+                    semanticsLabel: semanticsLabel ?? weekDayName,
                     style: weekdayTextStyle,
                   ),
                 ),
@@ -121,8 +125,12 @@ class WeekdayRow extends StatelessWidget {
           weekDay = localeDate.dateSymbols.STANDALONENARROWWEEKDAYS[i];
           break;
       }
-      weekDay = upperCaseWeekdays ? weekDay.toUpperCase() : weekDay;
-      list.add(_weekdayContainer(count, weekDay));
+      final displayWeekDay = upperCaseWeekdays
+          ? weekDay.toUpperCase()
+          : weekDay;
+      list.add(
+        _weekdayContainer(count, displayWeekDay, semanticsLabel: weekDay),
+      );
     }
 
     return list;
