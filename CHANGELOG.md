@@ -1,3 +1,28 @@
+## [Unreleased]
+
+- Add `inactiveDates` to render specific dates as non-selectable and ignore taps on those dates ([#395](https://github.com/hyochan/flutter_calendar_carousel/pull/395)).
+
+## [2.5.7] - 2026-04-27
+
+- chore(ci): remove one-shot format/apply-fix workflows
+
+## [2.5.6] - 2026-04-23
+
+- style: apply dart fix and remove unreachable default
+- ci: add one-shot workflow to apply dart fix
+- style: apply dart format
+- ci: add one-shot workflow to apply dart format
+- fix(ci): correct YAML syntax in auto-release skip step
+- ci: wire up CI, release, and publish workflows
+
+## [2.5.5]
+
+- Bump `flutter_lints` to `^6.0.0` and raise Dart SDK floor to `^3.8.0` ([#401](https://github.com/hyochan/flutter_calendar_carousel/pull/401))
+
+## [2.5.4]
+
+- Update `intl` version [#397](https://github.com/hyochan/flutter_calendar_carousel/pull/397)
+
 ## [2.5.3]
 
 - Add ability to configure day border radius by setting `daysBorderRadius` ([#391](https://github.com/hyochan/flutter_calendar_carousel/pull/391))
@@ -9,13 +34,6 @@
 - Fix PR links in 2.5.0's changelog not being clickable ([#390](https://github.com/hyochan/flutter_calendar_carousel/pull/390))
 - Fix inactive (disabled) days being clickable ([#389](https://github.com/hyochan/flutter_calendar_carousel/pull/389))
 - Don't invoke `animateToPage` when page was scrolled manually ([#388](https://github.com/hyochan/flutter_calendar_carousel/pull/388))
-
-## [2.5.0]
-
-- Add linter and code formatting ([#386](https://github.com/hyochan/flutter_calendar_carousel/pull/386))
-- Upgrade dependencies and integrate linter ([#384](https://github.com/hyochan/flutter_calendar_carousel/pull/384))
-- Support Xcode 16 for iOS ([#385](https://github.com/hyochan/flutter_calendar_carousel/pull/385))
-- Migrate Gradle to use declarative plugins block in Android example ([#383](https://github.com/hyochan/flutter_calendar_carousel/pull/383))
 
 ## [2.5.0]
 
