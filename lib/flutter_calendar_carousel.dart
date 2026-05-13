@@ -895,10 +895,10 @@ class _CalendarState<T extends EventInterface>
 
   bool _determineIsSelectable(DateTime date) {
     final dateOnly = date.dateOnly;
-    if (dateOnly.isBefore(minDate.dateOnly)) {
+    if (dateOnly.isBefore(minDate)) {
       return false;
     }
-    if (dateOnly.isAfter(maxDate.dateOnly)) {
+    if (dateOnly.isAfter(maxDate)) {
       return false;
     }
     if (_inactiveDateSet.contains(dateOnly)) {
@@ -911,14 +911,15 @@ class _CalendarState<T extends EventInterface>
       dates.map((date) => date.dateOnly).toSet();
 
   void _setMinMaxDates() {
-    minDate = widget.minSelectedDate ?? DateTime(2018);
+    minDate = (widget.minSelectedDate ?? DateTime(2018)).dateOnly;
     maxDate =
-        widget.maxSelectedDate ??
-        DateTime(
-          DateTime.now().year + 1,
-          DateTime.now().month,
-          DateTime.now().day,
-        );
+        (widget.maxSelectedDate ??
+                DateTime(
+                  DateTime.now().year + 1,
+                  DateTime.now().month,
+                  DateTime.now().day,
+                ))
+            .dateOnly;
   }
 
   void _onDayPressed(DateTime picked) {
