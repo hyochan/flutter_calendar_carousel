@@ -9,7 +9,7 @@ End state for every PR this skill touches:
 
 1. Copilot is a requested reviewer, or the request failed because that bot is
    unavailable in this repository and the failure is logged.
-2. Gemini has posted at least one review against the current HEAD (triggered via `/gemini review` comment).
+2. Gemini has posted at least one review against the current HEAD (triggered via `/gemini review for $HEAD_SHA` comment).
 3. CodeRabbit has posted a summary against the current HEAD (auto-triggered by its GitHub App on push), or CodeRabbit is unavailable in this repository and logged.
 4. No bot has actionable feedback outstanding against the current HEAD.
 5. No human thread is unanswered AND either the human has replied, or the thread is ≥ 7 days old and we have resolved autonomously.
@@ -27,12 +27,13 @@ If Copilot is NOT yet a requested reviewer AND the PR is not authored by a bot:
 ```bash
 OWNER_REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
 PR="$1"
+HEAD_SHA=$(gh pr view "$PR" --json headRefOid --jq .headRefOid)
 
 gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer[bot]" \
   || gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
     -f 'reviewers[]=copilot-pull-request-reviewer[bot]'
 
-gh pr comment "$PR" --body "/gemini review"
+gh pr comment "$PR" --body "/gemini review for $HEAD_SHA"
 
 # CodeRabbit: no manual action — configured via .coderabbit.yaml.
 ```
@@ -71,7 +72,7 @@ If any is true, jump to Step 6 — Request changes:
 - Title or any commit contains `revert`
 - Test files under `test/` deleted without same-PR replacement
 - `mergeStateStatus` ∈ {DIRTY, BLOCKED}
-- `mergeStateStatus == BEHIND` after one attempted update from `main` when the branch is repo-owned or maintainer edits are enabled.
+- `mergeStateStatus == BEHIND` after one attempted update from `main` using `gh pr update-branch "$PR"` when the branch is repo-owned or maintainer edits are enabled.
 
 If checks are absent, queued, pending, or in progress, return `waiting-checks`
 for this run. Do not request changes for checks that have not completed.
@@ -91,7 +92,7 @@ Bot logins:
 
 | Bot | Login | Re-kick |
 |---|---|---|
-| Gemini | `gemini-code-assist[bot]` | `gh pr comment "$PR" --body "/gemini review"` |
+| Gemini | `gemini-code-assist[bot]` | `gh pr comment "$PR" --body "/gemini review for $HEAD_SHA"` |
 | Copilot | review author `copilot-pull-request-reviewer[bot]`; reviewer login `copilot-pull-request-reviewer[bot]` | `gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" -f 'reviewers[]=copilot-pull-request-reviewer[bot]'` |
 | CodeRabbit | `coderabbitai[bot]` | nothing — re-runs on push |
 

@@ -19,7 +19,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    - Build a daily work queue from failed sweep steps, actionable issues, PR blockers that can be fixed in the base repo, dependency/Flutter drift, CI/release/publish failures, and automation gaps.
    - Split work into small branches. Use names like `codex/<area>-YYYYMMDD` or `chore/deps-YYYYMMDD`.
    - Implement the smallest safe change, then run the relevant verification. Minimum for product changes: `flutter pub get`, `flutter analyze`, `dart format --set-exit-if-changed .`, `flutter test --coverage`, and `dart pub publish --dry-run`.
-   - Commit, push, open a PR, request Copilot, post `/gemini review`, wait for CodeRabbit when available, and use the same 3-bot gates before merge.
+   - Commit, push, open a PR, request Copilot, post `/gemini review for $HEAD_SHA`, wait for CodeRabbit when available, and use the same 3-bot gates before merge.
    - If CI/reviews fail, push a follow-up fix or leave the PR open with a precise blocker comment/issue.
    - Never push directly to `main`. Never batch unrelated fixes. Never weaken lint, CI, release, publish, or security gates to make a PR pass.
    - Do not edit contributor PR branches unless the author explicitly requested/allowed maintainer edits; create repo-owned fix PRs instead.
@@ -54,10 +54,11 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    ```bash
    OWNER_REPO=$(gh repo view --json nameWithOwner --jq .nameWithOwner)
    PR=<number>
+   HEAD_SHA=$(gh pr view "$PR" --json headRefOid --jq .headRefOid)
    gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer[bot]" \
      || gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
        -f 'reviewers[]=copilot-pull-request-reviewer[bot]'
-   gh pr comment "$PR" --body "/gemini review"
+   gh pr comment "$PR" --body "/gemini review for $HEAD_SHA"
    # CodeRabbit auto-fires on push — no manual action.
    ```
 
@@ -71,9 +72,9 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    - **`isDraft == true`** → skip.
    - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: verify all CI checks green → `gh pr review "$PR" --approve --body "Automated bot PR — auto-merging." || true` → `gh pr merge "$PR" --auto --squash --delete-branch`. If checks are missing, pending, failed, cancelled, or timed out, record `skipped(bot-bypass-failed)` and do not approve. Do not run the 3-bot loop. CI is the gate.
    - **Everything else** → run the full `/review-pr` flow:
-     1. Step 0 prep if Copilot isn't a requested reviewer yet (assign + `/gemini review`).
+    1. Step 0 prep if Copilot isn't a requested reviewer yet (assign + `/gemini review for $HEAD_SHA`).
      2. Step 1 fetch state (PR JSON, diff, checks, reviews, comments).
-     3. Step 2 short-circuit gates — if any failed/cancelled check or guarded blocker hits → Step 6 request-changes, stop. If checks are pending or missing, wait and report `waiting-checks`; do not request changes for CI that has not run yet. If the branch is merely `BEHIND`, update it from `main` when the branch is repo-owned or maintainer edits are enabled; only request changes if that update fails or creates conflicts.
+    3. Step 2 short-circuit gates — if any failed/cancelled check or guarded blocker hits → Step 6 request-changes, stop. If checks are pending or missing, wait and report `waiting-checks`; do not request changes for CI that has not run yet. If the branch is merely `BEHIND`, update it from `main` via `gh pr update-branch "$PR"` when the branch is repo-owned or maintainer edits are enabled; only request changes if that update fails or creates conflicts.
      4. Step 4 bot-loop:
         - All 3 bots (`gemini-code-assist[bot]`, `copilot-pull-request-reviewer[bot]`, `coderabbitai[bot]`) must have `reviewed_current_head == true` against HEAD_SHA, or be marked `unavailable` because the app/reviewer cannot be requested in this repo.
         - If any bot is still catching up and hasn't been kicked against HEAD_SHA → kick once, move on, return `waiting-bots` for this PR this run.
