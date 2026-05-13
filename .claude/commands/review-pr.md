@@ -48,11 +48,9 @@ and skip waiting on it; do not block the PR on that bot.
 gh pr view "$PR" --json number,title,body,author,baseRefName,headRefName,isDraft,labels,mergeStateStatus,statusCheckRollup,reviewDecision,reviews,reviewRequests,comments,commits,headRefOid,updatedAt
 gh pr diff "$PR"
 gh pr checks "$PR" --watch=false
-gh api "repos/$OWNER_REPO/pulls/$PR/reviews"
-gh api "repos/$OWNER_REPO/issues/$PR/comments"
 ```
 
-Extract: `HEAD_SHA`, `HEAD_PUSHED_AT`, checks map, all reviews (login/state/submitted_at/commit_id), all comments (login/body/created_at).
+Extract: `HEAD_SHA`, checks map, all reviews (login/state/submitted_at/commit_id), and top-level comments from the `gh pr view` payload. Use direct REST calls only as a pagination fallback or when the `gh pr view` payload is missing required review/comment fields.
 
 ## Step 2 — Short-circuit gates (block merge immediately)
 
@@ -101,7 +99,7 @@ Bot logins:
 
 For each bot:
 
-- `reviewed_current_head`: true if latest review/comment has `commit_id == HEAD_SHA` OR `submitted_at >= HEAD_PUSHED_AT`.
+- `reviewed_current_head`: true when the latest bot review has `commit_id == HEAD_SHA`. For bots that only leave top-level comments without commit IDs, count the comment only if it appears after the bot was explicitly kicked for `HEAD_SHA` in this run; do not use broad timestamp comparisons as a substitute for commit identity.
 - `has_findings`: true if the latest content contains `state == "CHANGES_REQUESTED"`, inline severity markers (🛑 / ⚠️ / `Critical` / `Major` / `Nit:` / "Suggested change"), or reviewer-authored TODO/FIXME text. Ignore TODO/FIXME when it appears only inside quoted code, diffs, or documentation examples.
 - `unavailable`: true if the bot's app or reviewer cannot be requested in this repo (kick returned 404/403/422).
 
