@@ -51,6 +51,7 @@ gh pr checks "$PR" --watch=false
 ```
 
 Extract: `HEAD_SHA`, checks map, all reviews (login/state/submitted_at/commit_id), and top-level comments from the `gh pr view` payload. Use direct REST calls only as a pagination fallback or when the `gh pr view` payload is missing required review/comment fields.
+Keep `OWNER_REPO`, `PR`, and `HEAD_SHA` in scope for the later bot kick and merge commands; recompute them before Step 4 if the workflow is split across shell invocations.
 
 ## Step 2 — Short-circuit gates (block merge immediately)
 
@@ -92,7 +93,7 @@ Bot logins:
 | Bot | Login | Re-kick |
 |---|---|---|
 | Gemini | `gemini-code-assist[bot]` | `gh pr comment "$PR" --body "/gemini review"` |
-| Copilot | review author `copilot-pull-request-reviewer[bot]`; reviewer slug `copilot-pull-request-reviewer` | `gh api -X POST repos/$OWNER_REPO/pulls/$PR/requested_reviewers -f 'reviewers[]=copilot-pull-request-reviewer'` |
+| Copilot | review author `copilot-pull-request-reviewer[bot]`; reviewer slug `copilot-pull-request-reviewer` | `gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" -f 'reviewers[]=copilot-pull-request-reviewer'` |
 | CodeRabbit | `coderabbitai[bot]` | nothing — re-runs on push |
 
 ### 4a. Classify each bot against current HEAD
@@ -147,7 +148,7 @@ EOF
 )"
 ```
 
-No inline comments. No merge.
+Put every requested change in the review body as concrete file/line guidance. Do not apply the author's code changes from this command, do not use inline comments, and do not merge.
 
 ## Step 7 — Human conversations
 
@@ -155,7 +156,7 @@ Scan for unresolved human threads (non-bot authors):
 
 - **< 7 days since human's latest message**: reply substantively, wait. Return `waiting-human`.
 - **≥ 7 days AND we already replied AND human hasn't responded**: autonomous resolution:
-  - Clear code change ask → apply via request-changes + log "Auto-resolving after 7d no-reply".
+  - Clear code change ask → request changes with the required edits in the review body + log "Auto-resolving after 7d no-reply".
   - Question we already answered → "Auto-closing thread after 7d no-reply; our prior answer stands." Proceed to Step 5.
   - Ambiguous → prefer request-changes over merge. Log the decision.
 

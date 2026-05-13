@@ -11,6 +11,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 1. **Repository freshness & tracking**
    - Fetch latest remote state first: `git fetch origin main --tags --prune`.
    - Run the sweep against latest `origin/main`. If the mounted checkout has local changes or is behind, do not overwrite it; use a clean temporary worktree at `origin/main` and report the local dirty/behind state.
+   - Remove any temporary worktree created for the sweep before the run exits. If cleanup fails, report the path as a follow-up instead of leaving it implicit.
    - Record commit SHA, Flutter/Dart version, latest tag, commits since tag, and open issue/PR counts.
    - Use GitHub issues for recurring blockers: red main, failed dependency bumps, Flutter stable regressions, and CI/release/publish failures.
 
@@ -93,6 +94,10 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
      - Duplicates to mark with `duplicate`.
      - PR blockers worth tracking in the report: merge conflicts, missing CI, stale bot reviews, unresolved human asks, guarded public API changes, dependency/SDK changes, or breaking commits.
    - Do not add noisy duplicate comments when a current-head review already states the blocker.
+
+8. **Cleanup**
+   - Delete clean temporary worktrees created by this run with `git worktree remove <path>`.
+   - If a temporary worktree contains uncommitted diagnostics or logs that must be preserved, keep it and include the absolute path in the final report.
 
 ## Output
 

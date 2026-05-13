@@ -90,7 +90,7 @@ Triggered by `push: tags: ['v*']`. Runs:
 A single consolidated scheduled task, `flutter-calendar-carousel-daily`, runs every weekday morning. It always does the daily block, and branches into the weekly block on Mondays and the monthly block on the 1st of the month. The routine definition is in `.claude/commands/daily-routine.md`.
 
 **Daily block (every weekday)**
-1. Repository freshness — fetch `origin/main` and run against latest remote state; use a clean temporary worktree when the mounted checkout has local changes.
+1. Repository freshness — fetch `origin/main` and run against latest remote state; use a clean temporary worktree when the mounted checkout has local changes, then remove that worktree before exit or report the retained path.
 2. Autonomous task queue — split actionable maintenance into small branches/PRs: failed sweep fixes, dependency/Flutter drift, CI/release/publish failures, automation gaps, and base-repo fixes for PR blockers.
 3. Dependency check — `flutter pub outdated` and `flutter pub outdated --json`, split into direct/dev upgradable, direct/dev blocked, and transitive latest-only updates.
 4. Code quality — `flutter analyze` + `dart format --set-exit-if-changed .` + `dart pub publish --dry-run`.

@@ -133,6 +133,14 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
   final int? firstDayOfWeek;
   final DateTime? minSelectedDate;
   final DateTime? maxSelectedDate;
+
+  /// Dates that should render as non-selectable and ignore press callbacks.
+  ///
+  /// Comparison is done by `year`, `month`, and `day`, so pass `DateTime`
+  /// values in the same timezone as the rest of your calendar data to avoid
+  /// day mismatches across UTC or daylight-saving boundaries.
+  final List<DateTime> inactiveDates;
+
   final TextStyle? inactiveDaysTextStyle;
   final TextStyle? inactiveWeekendTextStyle;
   final bool headerTitleTouchable;
@@ -219,6 +227,7 @@ class CalendarCarousel<T extends EventInterface> extends StatefulWidget {
     this.firstDayOfWeek,
     this.minSelectedDate,
     this.maxSelectedDate,
+    this.inactiveDates = const <DateTime>[],
     this.inactiveDaysTextStyle,
     this.inactiveWeekendTextStyle,
     this.headerTitleTouchable = false,
@@ -266,6 +275,7 @@ class _CalendarState<T extends EventInterface>
   int _pageNum = 0;
   late DateTime minDate;
   late DateTime maxDate;
+  late Set<DateTime> _inactiveDateSet;
 
   /// When FIRSTDAYOFWEEK is 0 in dart-intl, it represents Monday. However it is the second day in the arrays of Weekdays.
   /// Therefore we need to add 1 modulo 7 to pick the right weekday from intl. (cf. [GlobalMaterialLocalizations])
@@ -278,14 +288,8 @@ class _CalendarState<T extends EventInterface>
     super.initState();
     initializeDateFormatting();
 
-    minDate = widget.minSelectedDate ?? DateTime(2018);
-    maxDate =
-        widget.maxSelectedDate ??
-        DateTime(
-          DateTime.now().year + 1,
-          DateTime.now().month,
-          DateTime.now().day,
-        );
+    _setMinMaxDates();
+    _inactiveDateSet = _dateOnlySet(widget.inactiveDates);
 
     final selectedDateTime = widget.selectedDateTime;
     if (selectedDateTime != null) _selectedDate = selectedDateTime;
@@ -311,7 +315,20 @@ class _CalendarState<T extends EventInterface>
 
   @override
   void didUpdateWidget(CalendarCarousel<T> oldWidget) {
-    if (widget.targetDateTime != null && widget.targetDateTime != _targetDate) {
+    final previousMinDate = minDate;
+    final previousMaxDate = maxDate;
+    _setMinMaxDates();
+
+    if (oldWidget.inactiveDates != widget.inactiveDates) {
+      _inactiveDateSet = _dateOnlySet(widget.inactiveDates);
+    }
+
+    final targetDateChanged =
+        widget.targetDateTime != null && widget.targetDateTime != _targetDate;
+    final dateRangeChanged =
+        previousMinDate != minDate || previousMaxDate != maxDate;
+
+    if (targetDateChanged || dateRangeChanged) {
       _init();
       _setDate(pageNum: _pageNum);
     }
@@ -504,7 +521,7 @@ class _CalendarState<T extends EventInterface>
     return Container(
       margin: EdgeInsets.all(widget.dayPadding),
       child: GestureDetector(
-        onLongPress: () => _onDayLongPressed(now),
+        onLongPress: isSelectable ? () => _onDayLongPressed(now) : null,
         child: TextButton(
           style: TextButton.styleFrom(
             shape:
@@ -706,14 +723,7 @@ class _CalendarState<T extends EventInterface>
                         markedDatesMap.getEvents(now).isNotEmpty) {
                       textStyle = widget.markedDateCustomTextStyle;
                     }
-                    bool isSelectable = true;
-                    if (now.millisecondsSinceEpoch <
-                        minDate.millisecondsSinceEpoch) {
-                      isSelectable = false;
-                    } else if (now.millisecondsSinceEpoch >
-                        maxDate.millisecondsSinceEpoch) {
-                      isSelectable = false;
-                    }
+                    final isSelectable = _determineIsSelectable(now);
 
                     return renderDay(
                       isSelectable,
@@ -814,14 +824,7 @@ class _CalendarState<T extends EventInterface>
                   } else {
                     return Container();
                   }
-                  bool isSelectable = true;
-                  if (now.millisecondsSinceEpoch <
-                      minDate.millisecondsSinceEpoch) {
-                    isSelectable = false;
-                  } else if (now.millisecondsSinceEpoch >
-                      maxDate.millisecondsSinceEpoch) {
-                    isSelectable = false;
-                  }
+                  final isSelectable = _determineIsSelectable(now);
                   return renderDay(
                     isSelectable,
                     index,
@@ -885,12 +888,38 @@ class _CalendarState<T extends EventInterface>
   }
 
   void _onDayLongPressed(DateTime picked) {
+    if (!_determineIsSelectable(picked)) return;
+
     widget.onDayLongPressed?.call(picked);
   }
 
+  bool _determineIsSelectable(DateTime date) {
+    final dateOnly = date.dateOnly;
+    if (dateOnly.isBefore(minDate)) {
+      return false;
+    }
+    if (dateOnly.isAfter(maxDate)) {
+      return false;
+    }
+    if (_inactiveDateSet.contains(dateOnly)) {
+      return false;
+    }
+    return true;
+  }
+
+  Set<DateTime> _dateOnlySet(Iterable<DateTime> dates) =>
+      dates.map((date) => date.dateOnly).toSet();
+
+  void _setMinMaxDates() {
+    final now = DateTime.now();
+    minDate = (widget.minSelectedDate ?? DateTime(2018)).dateOnly;
+    maxDate =
+        (widget.maxSelectedDate ?? DateTime(now.year + 1, now.month, now.day))
+            .dateOnly;
+  }
+
   void _onDayPressed(DateTime picked) {
-    if (picked.millisecondsSinceEpoch < minDate.millisecondsSinceEpoch) return;
-    if (picked.millisecondsSinceEpoch > maxDate.millisecondsSinceEpoch) return;
+    if (!_determineIsSelectable(picked)) return;
 
     setState(() {
       _selectedDate = picked;
@@ -910,6 +939,8 @@ class _CalendarState<T extends EventInterface>
     );
 
     if (selected != null) {
+      if (!_determineIsSelectable(selected)) return;
+
       // updating selected date range based on selected week
       setState(() {
         _selectedDate = selected;
@@ -1290,4 +1321,8 @@ class _CalendarState<T extends EventInterface>
           now,
         );
   }
+}
+
+extension _DateTimeDateOnly on DateTime {
+  DateTime get dateOnly => DateTime(year, month, day);
 }
