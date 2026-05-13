@@ -93,7 +93,7 @@ A single consolidated scheduled task, `flutter-calendar-carousel-daily`, runs ev
 1. Repository freshness — fetch `origin/main` and run against latest remote state; use a clean temporary worktree when the mounted checkout has local changes, then remove that worktree before exit or report the retained path.
 2. Autonomous task queue — split actionable maintenance into small branches/PRs: failed sweep fixes, dependency/Flutter drift, CI/release/publish failures, automation gaps, and base-repo fixes for PR blockers.
 3. Dependency check — `flutter pub outdated` and `flutter pub outdated --json`, split into direct/dev upgradable, direct/dev blocked, and transitive latest-only updates.
-4. Code quality — `flutter analyze` + `dart format --set-exit-if-changed .` + `dart pub publish --dry-run`.
+4. Code quality — `flutter analyze` + `dart format --set-exit-if-changed .` + `flutter pub publish --dry-run`.
 5. Tests — `flutter test --coverage`.
 6. Issue/PR triage — label issues, mark clear duplicates, and report PR blockers such as missing CI, merge conflicts, guarded public API changes, SDK/dependency changes, or breaking commits.
 7. PR lifecycle — for bot- or maintainer-authored maintenance PRs, monitor CI and bot reviews, push follow-up fixes when needed, approve/enable auto-merge only when all gates are green, and never push directly to `main`.

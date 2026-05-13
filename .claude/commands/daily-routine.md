@@ -18,7 +18,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 2. **Autonomous maintenance task loop**
    - Build a daily work queue from failed sweep steps, actionable issues, PR blockers that can be fixed in the base repo, dependency/Flutter drift, CI/release/publish failures, and automation gaps.
    - Split work into small branches. Use names like `codex/<area>-YYYYMMDD` or `chore/deps-YYYYMMDD`.
-   - Implement the smallest safe change, then run the relevant verification. Minimum for product changes: `flutter pub get`, `flutter analyze`, `dart format --set-exit-if-changed .`, `flutter test --coverage`, and `dart pub publish --dry-run`.
+   - Implement the smallest safe change, then run the relevant verification. Minimum for product changes: `flutter pub get`, `flutter analyze`, `dart format --set-exit-if-changed .`, `flutter test --coverage`, and `flutter pub publish --dry-run`.
    - Commit, push, open a PR, request Copilot, post `/gemini review for $HEAD_SHA`, wait for CodeRabbit when available, and use the same 3-bot gates before merge.
    - If CI/reviews fail, push a follow-up fix or leave the PR open with a precise blocker comment/issue.
    - Never push directly to `main`. Never batch unrelated fixes. Never weaken lint, CI, release, publish, or security gates to make a PR pass.
@@ -35,7 +35,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 4. **Code quality**
    - `flutter analyze`
    - `dart format --set-exit-if-changed .`
-   - `dart pub publish --dry-run`
+   - `flutter pub publish --dry-run`
    - Analyze and format must pass. If they don't, surface the failure, open/update `daily-routine: analyze/format red on main`, and stop the routine.
    - Report publish dry-run as the package publishability/breaking-risk smoke check.
 
