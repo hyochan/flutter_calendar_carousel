@@ -56,8 +56,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
    PR=<number>
    HEAD_SHA=$(gh pr view "$PR" --json headRefOid --jq .headRefOid)
    gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer[bot]" \
-     || gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
-       -f 'reviewers[]=copilot-pull-request-reviewer[bot]'
+     || echo '{"reviewers":["copilot-pull-request-reviewer[bot]"]}' | gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" --input -
    gh pr comment "$PR" --body "/gemini review for $HEAD_SHA"
    # CodeRabbit auto-fires on push — no manual action.
    ```
@@ -70,7 +69,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 
    For each PR:
    - **`isDraft == true`** → skip.
-   - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: verify all CI checks green → `gh pr review "$PR" --approve --body "Automated bot PR — auto-merging." || true` → `gh pr merge "$PR" --auto --squash --delete-branch`. If checks are missing, pending, failed, cancelled, or timed out, record `skipped(bot-bypass-failed)` and do not approve. Do not run the 3-bot loop. CI is the gate.
+   - **Author is a bot** (`dependabot[bot]`, `renovate[bot]`, `github-actions[bot]`, or ends `[bot]`) → **bot-bypass**: fetch `statusCheckRollup` and verify every reported check is completed with `SUCCESS`, `SKIPPED`, or `NEUTRAL` before approval → `gh pr review "$PR" --approve --body "Automated bot PR — auto-merging." || true` → `gh pr merge "$PR" --auto --squash --delete-branch`. If checks are missing, pending, failed, cancelled, or timed out, record `skipped(bot-bypass-failed)` and do not approve. Do not run the 3-bot loop. CI is the gate.
    - **Everything else** → run the full `/review-pr` flow:
      - Step 0 prep if Copilot isn't a requested reviewer yet (assign + `/gemini review for $HEAD_SHA`).
      - Step 1 fetch state (PR JSON, diff, checks, reviews, comments).

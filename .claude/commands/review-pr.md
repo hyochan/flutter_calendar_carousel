@@ -30,8 +30,7 @@ PR="$1"
 HEAD_SHA=$(gh pr view "$PR" --json headRefOid --jq .headRefOid)
 
 gh pr edit "$PR" --add-reviewer "copilot-pull-request-reviewer[bot]" \
-  || gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" \
-    -f 'reviewers[]=copilot-pull-request-reviewer[bot]'
+  || echo '{"reviewers":["copilot-pull-request-reviewer[bot]"]}' | gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" --input -
 
 gh pr comment "$PR" --body "/gemini review for $HEAD_SHA"
 
@@ -93,14 +92,14 @@ Bot logins:
 | Bot | Login | Re-kick |
 |---|---|---|
 | Gemini | `gemini-code-assist[bot]` | `gh pr comment "$PR" --body "/gemini review for $HEAD_SHA"` |
-| Copilot | review author `copilot-pull-request-reviewer[bot]`; reviewer login `copilot-pull-request-reviewer[bot]` | `gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" -f 'reviewers[]=copilot-pull-request-reviewer[bot]'` |
+| Copilot | review author `copilot-pull-request-reviewer[bot]`; reviewer login `copilot-pull-request-reviewer[bot]` | `echo '{"reviewers":["copilot-pull-request-reviewer[bot]"]}' \| gh api -X POST "repos/$OWNER_REPO/pulls/$PR/requested_reviewers" --input -` |
 | CodeRabbit | `coderabbitai[bot]` | nothing — re-runs on push |
 
 ### 4a. Classify each bot against current HEAD
 
 For each bot:
 
-- `reviewed_current_head`: true when the latest bot review has `commit_id == HEAD_SHA`. For bots that only leave top-level comments without commit IDs, prefer a response that explicitly references `HEAD_SHA` from the kick; otherwise count it only if it appears after the HEAD-specific kick and after the current commit was pushed. If multiple kicks or pushes make the mapping ambiguous, return `waiting-bots`.
+- `reviewed_current_head`: true when the latest bot review has `commit_id == HEAD_SHA`. For bots that only leave top-level comments without commit IDs, count the response only when its body contains the exact `HEAD_SHA` included in the kick; otherwise return `waiting-bots`.
 - `has_findings`: true if the latest content contains `state == "CHANGES_REQUESTED"`, inline severity markers (🛑 / ⚠️ / `Critical` / `Major` / `Nit:`), an opening code fence whose info string is `suggestion`, or reviewer-authored TODO/FIXME text. Ignore TODO/FIXME when it appears only inside quoted code, diffs, or documentation examples.
 - `unavailable`: true if the bot's app or reviewer cannot be requested in this repo (kick returned 404/403/422).
 
