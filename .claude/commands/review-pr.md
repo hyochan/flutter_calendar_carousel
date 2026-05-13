@@ -99,7 +99,7 @@ Bot logins:
 
 For each bot:
 
-- `reviewed_current_head`: true when the latest bot review has `commit_id == HEAD_SHA`. For bots that only leave top-level comments without commit IDs, count the response only when its body contains the exact `HEAD_SHA` included in the kick; otherwise return `waiting-bots`.
+- `reviewed_current_head`: true when the latest bot review has `commit_id == HEAD_SHA`. For bots that only leave top-level comments without commit IDs, count the response only when its body contains the `HEAD_SHA` or its 7-character prefix from the kick; otherwise return `waiting-bots`.
 - `has_findings`: true if the latest content contains `state == "CHANGES_REQUESTED"`, inline severity markers (🛑 / ⚠️ / `Critical` / `Major` / `Nit:`), an opening code fence whose info string is `suggestion`, or reviewer-authored TODO/FIXME text. Ignore TODO/FIXME when it appears only inside quoted code, diffs, or documentation examples.
 - `unavailable`: true if the bot's app or reviewer cannot be requested in this repo (kick returned 404/403/422).
 

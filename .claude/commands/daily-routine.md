@@ -41,7 +41,7 @@ Run the daily maintenance sweep. This is also what the Cowork scheduled tasks tr
 
 5. **Tests**
    - `flutter test --coverage`
-   - Calculate coverage from `coverage/lcov.info` after the test run, for example by summing `LH:` and `LF:` lines and reporting `LH / LF * 100`.
+   - Calculate coverage from `coverage/lcov.info` after the test run, for example by summing `LH:` and `LF:` lines and reporting `(LF > 0 ? LH / LF * 100 : 0)`.
    - Report pass/fail counts. If any test fails, open (or update) a tracking issue with the failure output.
 
 6. **PR review & auto-merge (3-bot loop)**
