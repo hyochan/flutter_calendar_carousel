@@ -25,7 +25,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  intl: ^0.19.0
+  intl: ^0.20.2
 
   flutter_calendar_carousel:
     # When depending on this package from a real application you should use:
