@@ -1,3 +1,8 @@
+## [2.6.1] - 2026-05-25
+
+- chore(deps): bump example dependencies (#405)
+
+
 ## [2.6.0] - 2026-05-13
 
 - docs: add autonomous maintenance runbooks
