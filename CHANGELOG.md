@@ -1,3 +1,8 @@
+## [2.6.2] - 2026-06-01
+
+- chore(deps): weekly lock refresh (#406)
+
+
 ## [2.6.1] - 2026-05-25
 
 - chore(deps): bump example dependencies (#405)
