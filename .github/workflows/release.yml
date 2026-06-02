@@ -158,6 +158,12 @@ jobs:
           sed -i -E "s/^version: .*/version: ${NEW_VERSION}/" pubspec.yaml
           grep '^version:' pubspec.yaml
 
+      - name: Refresh lockfiles
+        if: inputs.version != 'current'
+        run: |
+          flutter pub get
+          (cd example && flutter pub get)
+
       - name: Regenerate CHANGELOG section
         env:
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
@@ -197,7 +203,7 @@ jobs:
           TAG: ${{ steps.bump.outputs.tag }}
         run: |
           set -euo pipefail
-          git add pubspec.yaml CHANGELOG.md
+          git add pubspec.yaml CHANGELOG.md pubspec.lock example/pubspec.lock
           if git diff --cached --quiet; then
             echo "Nothing to commit (likely 'current' bump)."
           else
