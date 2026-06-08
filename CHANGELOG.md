@@ -1,3 +1,9 @@
+## [2.6.3] - 2026-06-08
+
+- chore: sync example lockfile version (#412)
+- ci: run checks for dependency lockfiles (#408)
+
+
 ## [2.6.2] - 2026-06-01
 
 - chore(deps): weekly lock refresh (#406)
