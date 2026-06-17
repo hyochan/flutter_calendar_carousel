@@ -76,7 +76,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "2.6.3"
+    version: "2.6.4"
   flutter_driver:
     dependency: transitive
     description: flutter
