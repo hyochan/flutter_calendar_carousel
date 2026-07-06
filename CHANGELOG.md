@@ -1,3 +1,8 @@
+## [2.6.7] - 2026-07-06
+
+- chore: sync example lockfile version (#418)
+
+
 ## [2.6.6] - 2026-06-29
 
 - chore: sync example lockfile version (#417)
