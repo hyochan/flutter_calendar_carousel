@@ -39,10 +39,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           cache: true
@@ -72,7 +72,7 @@ jobs:
       tag: ${{ steps.bump.outputs.tag }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           token: ${{ secrets.DEPENDENCY_UPDATE_PAT || secrets.GITHUB_TOKEN }}
@@ -83,7 +83,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           cache: true
@@ -158,6 +158,12 @@ jobs:
           sed -i -E "s/^version: .*/version: ${NEW_VERSION}/" pubspec.yaml
           grep '^version:' pubspec.yaml
 
+      - name: Refresh example lockfile
+        if: inputs.version != 'current'
+        run: |
+          flutter pub get
+          (cd example && flutter pub get)
+
       - name: Regenerate CHANGELOG section
         env:
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
@@ -197,7 +203,7 @@ jobs:
           TAG: ${{ steps.bump.outputs.tag }}
         run: |
           set -euo pipefail
-          git add pubspec.yaml CHANGELOG.md
+          git add pubspec.yaml CHANGELOG.md example/pubspec.lock
           if git diff --cached --quiet; then
             echo "Nothing to commit (likely 'current' bump)."
           else

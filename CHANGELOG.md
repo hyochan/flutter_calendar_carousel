@@ -58,6 +58,11 @@
 
 ## [Unreleased]
 
+- Refresh and commit the example lockfile during automated version bumps to prevent recurring release drift ([#409](https://github.com/hyochan/flutter_calendar_carousel/issues/409)).
+- Provision pub.dev OIDC credentials in the publish workflow so tagged releases do not wait for interactive authentication ([#403](https://github.com/hyochan/flutter_calendar_carousel/issues/403)).
+- Update the example to `intl` 0.20.3, current Android build tooling, iOS 13/UIScene, and Flutter Swift Package Manager integration.
+- Add regression coverage for inactive future dates and manual page scrolling, and build the Android example in CI.
+- Synchronize Codex and Claude repository workflows around shared issue, verification, commit, rebase, self-review, and five-minute PR review procedures.
 - Add `upperCaseWeekDays` to render weekday labels in uppercase, including values passed to custom weekday builders ([#392](https://github.com/hyochan/flutter_calendar_carousel/pull/392)).
 - Add `inactiveDates` to render specific dates as non-selectable and ignore taps on those dates ([#395](https://github.com/hyochan/flutter_calendar_carousel/pull/395)).
 - Document the autonomous maintenance runbooks, PR review loop, and deployment workflow expectations ([#402](https://github.com/hyochan/flutter_calendar_carousel/pull/402)).
