@@ -1,0 +1,4 @@
+interface:
+  display_name: "Flutter Calendar Carousel Workflows"
+  short_description: "Run guarded Flutter package workflows"
+  default_prompt: "Use $flutter-calendar-carousel-workflows to complete this repository task with its checks and release safeguards."
