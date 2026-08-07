@@ -9,6 +9,12 @@ Run the sweep against fresh `origin/main`. If the current checkout is dirty or
 behind, use a detached temporary worktree and remove it afterward; never overwrite
 or stash an unrelated active checkout merely to run maintenance.
 
+Run daily quality checks with the official current stable Flutter SDK. If the
+active SDK is on `beta`, `dev`, or a stale stable revision, use an isolated SDK
+at the current stable release instead of changing the user's global checkout.
+Never report `main` as red from a beta/dev test-runner failure unless the same
+failure reproduces on current stable.
+
 ## Daily Sweep
 
 1. Fetch `origin main --tags --prune`. Record origin SHA, latest tag, commits
