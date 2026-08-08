@@ -1,3 +1,8 @@
+## [2.6.11] - 2026-08-08
+
+- fix(maintenance): support current Flutter and release flows (#424)
+
+
 ## [2.6.10] - 2026-07-27
 
 - chore: sync example lockfile version (#423)
