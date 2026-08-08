@@ -20,7 +20,6 @@ on:
   push:
     tags:
       - 'v*'
-  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -34,10 +33,16 @@ jobs:
     environment: pub-dev
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # setup-dart requests the GitHub OIDC token and provisions the
+      # short-lived pub.dev credential. The Flutter SDK's dart binary shadows
+      # this action's binary below, but continues to use that credential.
+      - name: Set up pub.dev authentication
+        uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1 # v1.8.0
 
       - name: Set up Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
         with:
           channel: stable
           cache: true

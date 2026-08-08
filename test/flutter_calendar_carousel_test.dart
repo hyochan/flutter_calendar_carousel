@@ -107,7 +107,7 @@ void main() {
     DateTime? pressedDay;
     DateTime? longPressedDay;
     final selectedDay = DateTime(2026, 5, 13);
-    final blockedDay = DateTime(2026, 5, 12, 23, 30);
+    final blockedDay = DateTime(2026, 5, 14, 23, 30);
     const inactiveStyle = TextStyle(color: Colors.purple);
 
     final carousel = CalendarCarousel(
@@ -148,6 +148,38 @@ void main() {
     await tester.pump();
 
     expect(longPressedDay, isNull);
+  });
+
+  testWidgets('manual page scroll does not snap at the halfway point', (
+    WidgetTester tester,
+  ) async {
+    final carousel = CalendarCarousel(
+      height: 420,
+      selectedDateTime: DateTime(2026, 5, 13),
+      targetDateTime: DateTime(2026, 5, 13),
+      minSelectedDate: DateTime(2026),
+      maxSelectedDate: DateTime(2026, 12, 31),
+    );
+
+    await tester.pumpWidget(MaterialApp(home: Scaffold(body: carousel)));
+
+    final pageViewFinder = find.byType(PageView);
+    final pageView = tester.widget<PageView>(pageViewFinder);
+    final controller = pageView.controller!;
+    final initialPage = controller.page!;
+    final pageWidth = tester.getSize(pageViewFinder).width;
+
+    final gesture = await tester.startGesture(tester.getCenter(pageViewFinder));
+    await gesture.moveBy(Offset(-pageWidth * 0.1, 0));
+    await tester.pump();
+    await gesture.moveBy(Offset(-pageWidth * 0.55, 0));
+    await tester.pump(const Duration(milliseconds: 2));
+
+    expect(controller.page, greaterThan(initialPage + 0.5));
+    expect(controller.page, lessThan(initialPage + 0.9));
+
+    await gesture.up();
+    await tester.pump();
   });
 
   testWidgets('minSelectedDate compares by calendar day', (
