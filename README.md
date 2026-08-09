@@ -8,6 +8,11 @@
 An accessible, theme-aware Flutter calendar with lazy month and week paging,
 controlled dates, typed events, and concise customization APIs.
 
+> **Upgrading from 2.x? Version 3.0 is intentionally breaking.** The 2.x
+> compatibility layer, package-owned event models, and legacy styling flags
+> have been removed. Review the complete
+> [2.x-to-3.0 migration guide](#migrating-from-2x-to-30) before upgrading.
+
 ![Month and week calendar navigation with event selection](doc/calendar-demo.gif)
 
 The example demonstrates controlled selection, event markers, and consistent
