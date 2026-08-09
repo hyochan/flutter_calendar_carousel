@@ -14,8 +14,9 @@ on:
           - major
           - current
           - rc-bump
+          - finalize
       prerelease:
-        description: 'Mark as prerelease (adds -rc.1 when bumping)'
+        description: 'Mark patch/minor/major as prerelease (adds -rc.1)'
         required: true
         default: false
         type: boolean
@@ -38,6 +39,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
+      - name: Require the main branch
+        env:
+          RELEASE_REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [ "$RELEASE_REF" != 'refs/heads/main' ]; then
+            echo "Releases must be dispatched from refs/heads/main; received $RELEASE_REF" >&2
+            exit 1
+          fi
+
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -70,6 +81,7 @@ jobs:
     outputs:
       new_version: ${{ steps.bump.outputs.new_version }}
       tag: ${{ steps.bump.outputs.tag }}
+      is_prerelease: ${{ steps.bump.outputs.is_prerelease }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -100,14 +112,16 @@ jobs:
           echo "current_version=$current" >> "$GITHUB_OUTPUT"
           echo "Current version: $current"
 
-          # Strip any existing -rc.N suffix for base math.
-          base="${current%%-*}"
-          rc_suffix=""
-          case "$current" in
-            *-rc.*) rc_suffix="${current#*-}" ;;
-          esac
+          if [[ ! "$current" =~ ^([0-9]+)\.([0-9]+)\.([0-9]+)(-rc\.([0-9]+))?$ ]]; then
+            echo "Unsupported package version: $current" >&2
+            exit 1
+          fi
 
-          IFS='.' read -r major minor patch <<< "$base"
+          major="${BASH_REMATCH[1]}"
+          minor="${BASH_REMATCH[2]}"
+          patch="${BASH_REMATCH[3]}"
+          base="${major}.${minor}.${patch}"
+          rc_num="${BASH_REMATCH[5]-}"
 
           bump_semver() {
             case "$BUMP" in
@@ -119,6 +133,10 @@ jobs:
 
           case "$BUMP" in
             patch|minor|major)
+              if [ -n "$rc_num" ]; then
+                echo "$BUMP cannot be applied to $current; use rc-bump or finalize" >&2
+                exit 1
+              fi
               bump_semver
               new_base="${major}.${minor}.${patch}"
               if [ "$PRERELEASE" = "true" ]; then
@@ -131,13 +149,23 @@ jobs:
               new_version="$current"
               ;;
             rc-bump)
-              if [ -z "$rc_suffix" ]; then
+              if [ -z "$rc_num" ]; then
                 echo "rc-bump requested but current version ($current) has no -rc suffix" >&2
                 exit 1
               fi
-              rc_num="${rc_suffix#rc.}"
               rc_num=$((rc_num + 1))
               new_version="${base}-rc.${rc_num}"
+              ;;
+            finalize)
+              if [ -z "$rc_num" ]; then
+                echo "finalize requested but current version ($current) is not an rc" >&2
+                exit 1
+              fi
+              if [ "$PRERELEASE" = "true" ]; then
+                echo "finalize creates a stable version; prerelease must be false" >&2
+                exit 1
+              fi
+              new_version="$base"
               ;;
             *)
               echo "Unknown bump type: $BUMP" >&2
@@ -145,10 +173,17 @@ jobs:
               ;;
           esac
 
+          case "$new_version" in
+            *-rc.*) is_prerelease=true ;;
+            *) is_prerelease=false ;;
+          esac
+
           echo "new_version=$new_version" >> "$GITHUB_OUTPUT"
           echo "tag=v${new_version}" >> "$GITHUB_OUTPUT"
+          echo "is_prerelease=$is_prerelease" >> "$GITHUB_OUTPUT"
           echo "New version: $new_version"
           echo "New tag: v$new_version"
+          echo "Prerelease: $is_prerelease"
 
       - name: Write new version to pubspec.yaml
         if: inputs.version != 'current'
@@ -164,38 +199,125 @@ jobs:
           flutter pub get
           (cd example && flutter pub get)
 
-      - name: Regenerate CHANGELOG section
+      - name: Promote CHANGELOG section
         env:
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
+          RELEASE_MODE: ${{ inputs.version }}
         run: |
           set -euo pipefail
 
-          prev_tag=$(git tag --sort=-creatordate | head -n1 || true)
-          if [ -n "$prev_tag" ]; then
-            range="${prev_tag}..HEAD"
-          else
-            range="HEAD"
+          if grep -Fq "## [${NEW_VERSION}]" CHANGELOG.md; then
+            if [ "$RELEASE_MODE" = "current" ]; then
+              echo "CHANGELOG.md already contains ${NEW_VERSION}; reusing it."
+              exit 0
+            fi
+            echo "CHANGELOG.md already contains a ${NEW_VERSION} section" >&2
+            exit 1
           fi
 
-          echo "Generating CHANGELOG section for $range"
+          unreleased_count=$(grep -c '^## \[Unreleased\][[:space:]]*$' CHANGELOG.md || true)
+          if [ "$unreleased_count" -ne 1 ]; then
+            echo "CHANGELOG.md must contain exactly one [Unreleased] section" >&2
+            exit 1
+          fi
+
+          awk '
+            /^## \[Unreleased\][[:space:]]*$/ { capture = 1; next }
+            capture && /^## \[/ { exit }
+            capture { print }
+          ' CHANGELOG.md > .changelog_curated
+
+          trim_notes() {
+            awk '
+              { lines[NR] = $0 }
+              $0 !~ /^[[:space:]]*$/ {
+                if (first == 0) first = NR
+                last = NR
+              }
+              END {
+                for (line = first; line <= last; line++) print lines[line]
+              }
+            ' "$1"
+          }
+
+          if grep -q '[^[:space:]]' .changelog_curated; then
+            trim_notes .changelog_curated > .changelog_notes
+          else
+            : > .changelog_notes
+          fi
+
+          if [ "$RELEASE_MODE" = "finalize" ]; then
+            awk -v prefix="## [${NEW_VERSION}-rc." '
+              /^## \[/ {
+                if (capture) print ""
+                capture = index($0, prefix) == 1
+                next
+              }
+              capture { print }
+            ' CHANGELOG.md > .changelog_rc_notes_raw
+
+            if ! grep -q '[^[:space:]]' .changelog_rc_notes_raw; then
+              echo "No ${NEW_VERSION}-rc.N notes found to promote" >&2
+              exit 1
+            fi
+            trim_notes .changelog_rc_notes_raw > .changelog_rc_notes
+            if grep -q '[^[:space:]]' .changelog_notes; then
+              printf '\n\n' >> .changelog_notes
+            fi
+            cat .changelog_rc_notes >> .changelog_notes
+          fi
+
+          if ! grep -q '[^[:space:]]' .changelog_notes; then
+            prev_tag=$(git tag --sort=-creatordate | head -n1 || true)
+            if [ -n "$prev_tag" ]; then
+              range="${prev_tag}..HEAD"
+            else
+              range="HEAD"
+            fi
+
+            echo "No curated notes; generating fallback from $range"
+            if git log "$range" --pretty=format:'- %s' \
+              | grep -E '\(#[0-9]+\)$' > .changelog_notes; then
+              :
+            else
+              git log "$range" --pretty=format:'- %s' > .changelog_notes
+            fi
+            if ! grep -q '[^[:space:]]' .changelog_notes; then
+              echo "- Release ${NEW_VERSION}." > .changelog_notes
+            fi
+          fi
+
+          awk '/^## \[Unreleased\][[:space:]]*$/ { exit } { print }' \
+            CHANGELOG.md > .changelog_prefix
+          awk '
+            /^## \[Unreleased\][[:space:]]*$/ { skip = 1; next }
+            skip && /^## \[/ { skip = 0 }
+            !skip { print }
+          ' CHANGELOG.md > .changelog_rest
 
           {
+            if [ -s .changelog_prefix ]; then
+              cat .changelog_prefix
+              echo ""
+            fi
+            echo "## [Unreleased]"
+            echo ""
             echo "## [${NEW_VERSION}] - $(date -u +%Y-%m-%d)"
             echo ""
-            git log "$range" --pretty=format:'- %s' \
-              | grep -E '\(#[0-9]+\)$' \
-              || git log "$range" --pretty=format:'- %s'
+            cat .changelog_notes
             echo ""
             echo ""
-          } > .changelog_new
+            cat .changelog_rest
+          } > CHANGELOG.md.tmp
 
-          if [ -f CHANGELOG.md ]; then
-            cat .changelog_new CHANGELOG.md > CHANGELOG.md.tmp
-          else
-            cp .changelog_new CHANGELOG.md.tmp
-          fi
           mv CHANGELOG.md.tmp CHANGELOG.md
-          rm -f .changelog_new
+          rm -f \
+            .changelog_curated \
+            .changelog_notes \
+            .changelog_prefix \
+            .changelog_rc_notes \
+            .changelog_rc_notes_raw \
+            .changelog_rest
 
       - name: Commit, tag, push
         env:
@@ -224,16 +346,20 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ steps.bump.outputs.tag }}
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
-          PRERELEASE: ${{ inputs.prerelease }}
+          IS_PRERELEASE: ${{ steps.bump.outputs.is_prerelease }}
         run: |
           set -euo pipefail
-          notes=$(awk "/^## \\[${NEW_VERSION}\\]/{flag=1;next}/^## \\[/{flag=0}flag" CHANGELOG.md || true)
+          notes=$(awk -v heading="## [${NEW_VERSION}]" '
+            index($0, heading) == 1 { capture = 1; next }
+            capture && /^## \[/ { exit }
+            capture { print }
+          ' CHANGELOG.md || true)
           if [ -z "$notes" ]; then
             notes="Release ${NEW_VERSION}"
           fi
 
           args=(release create "$TAG" --title "$TAG" --notes "$notes")
-          if [ "$PRERELEASE" = "true" ]; then
+          if [ "$IS_PRERELEASE" = "true" ]; then
             args+=(--prerelease)
           fi
           gh "${args[@]}"

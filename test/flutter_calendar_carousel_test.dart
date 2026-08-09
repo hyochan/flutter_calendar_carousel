@@ -1,298 +1,334 @@
-// This is a basic Flutter widget test.
-// To perform an interaction with a widget in your test, use the WidgetTester utility that Flutter
-// provides. For example, you can send tap and scroll gestures. You can also use WidgetTester to
-// find child widgets in the widget tree, read text, and verify that the values of widget properties
-// are correct.
-
 import 'package:flutter/material.dart';
-import 'package:flutter_calendar_carousel/classes/event.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-Type typeOf<T>() => T;
-
 void main() {
-  testWidgets('Default test for Calendar Carousel', (
+  final firstDate = DateTime(2026, 1, 1);
+  final lastDate = DateTime(2026, 12, 31);
+  final focus = DateTime(2026, 5, 13);
+
+  testWidgets('month view renders a deterministic focused page', (
     WidgetTester tester,
   ) async {
-    DateTime? pressedDay;
-    //  Build our app and trigger a frame.
-    final carousel = CalendarCarousel(
-      daysHaveCircularBorder: null,
-      weekendTextStyle: TextStyle(color: Colors.red),
-      thisMonthDayBorderColor: Colors.grey,
-      headerText: 'Custom Header',
-      weekFormat: true,
-      height: 200,
-      showIconBehindDayText: true,
-      customGridViewPhysics: NeverScrollableScrollPhysics(),
-      markedDateShowIcon: true,
-      markedDateIconMaxShown: 2,
-      selectedDayTextStyle: TextStyle(color: Colors.yellow),
-      todayTextStyle: TextStyle(color: Colors.blue),
-      markedDateIconBuilder: (Event event) {
-        return event.icon ?? Icon(Icons.help_outline);
-      },
-      todayButtonColor: Colors.transparent,
-      todayBorderColor: Colors.green,
-      markedDateMoreShowTotal: true,
-      // null for not showing hidden events indicator
-      onDayPressed: (date, event) {
-        pressedDay = date;
-      },
-    );
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: Container(child: carousel)),
-      ),
-    );
-
-    expect(find.byWidget(carousel), findsOneWidget);
-    expect(pressedDay, isNull);
-  });
-
-  testWidgets('make sure onDayPressed is called when the user tap', (
-    WidgetTester tester,
-  ) async {
-    DateTime? pressedDay;
-
-    final carousel = CalendarCarousel(
-      weekFormat: true,
-      height: 200,
-      onDayPressed: (date, event) {
-        pressedDay = date;
-      },
-    );
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: Container(child: carousel)),
-      ),
-    );
-
-    expect(find.byWidget(carousel), findsOneWidget);
-
-    expect(pressedDay, isNull);
-
-    await tester.tap(
-      find.text(DateTime.now().subtract(Duration(days: 1)).day.toString()),
-    );
-
-    await tester.pump();
-
-    expect(pressedDay, isNotNull);
-  });
-
-  testWidgets(
-    'should do nothing when the user tap and onDayPressed is not provided',
-    (WidgetTester tester) async {
-      final carousel = CalendarCarousel(weekFormat: true, height: 200);
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(body: Container(child: carousel)),
+      _host(
+        CalendarCarousel<void>.month(
+          focusedDate: focus,
+          firstDate: firstDate,
+          lastDate: lastDate,
+          locale: const Locale('en', 'US'),
         ),
-      );
-
-      expect(find.byWidget(carousel), findsOneWidget);
-
-      await tester.tap(
-        find.text(DateTime.now().subtract(Duration(days: 1)).day.toString()),
-      );
-      await tester.pump();
-    },
-  );
-
-  testWidgets('inactiveDates block taps and use inactive style', (
-    WidgetTester tester,
-  ) async {
-    DateTime? pressedDay;
-    DateTime? longPressedDay;
-    final selectedDay = DateTime(2026, 5, 13);
-    final blockedDay = DateTime(2026, 5, 14, 23, 30);
-    const inactiveStyle = TextStyle(color: Colors.purple);
-
-    final carousel = CalendarCarousel(
-      weekFormat: true,
-      height: 200,
-      selectedDateTime: selectedDay,
-      targetDateTime: selectedDay,
-      minSelectedDate: DateTime(2026, 5),
-      maxSelectedDate: DateTime(2026, 5, 31, 23, 59),
-      inactiveDates: [blockedDay],
-      inactiveDaysTextStyle: inactiveStyle,
-      inactiveWeekendTextStyle: inactiveStyle,
-      onDayPressed: (date, event) {
-        pressedDay = date;
-      },
-      onDayLongPressed: (date) {
-        longPressedDay = date;
-      },
-    );
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: Container(child: carousel)),
       ),
     );
 
-    final blockedFinder = find.text(blockedDay.day.toString());
-    expect(blockedFinder, findsOneWidget);
-
-    final blockedText = tester.widget<Text>(blockedFinder);
-    expect(blockedText.style?.color, inactiveStyle.color);
-
-    await tester.tap(blockedFinder);
-    await tester.pump();
-
-    expect(pressedDay, isNull);
-
-    await tester.longPress(blockedFinder);
-    await tester.pump();
-
-    expect(longPressedDay, isNull);
+    expect(find.text('May 2026'), findsOneWidget);
+    expect(find.byKey(ValueKey<DateTime>(focus)), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
-  testWidgets('manual page scroll does not snap at the halfway point', (
+  testWidgets('week view always builds seven consecutive civil dates', (
     WidgetTester tester,
   ) async {
-    final carousel = CalendarCarousel(
-      height: 420,
-      selectedDateTime: DateTime(2026, 5, 13),
-      targetDateTime: DateTime(2026, 5, 13),
-      minSelectedDate: DateTime(2026),
-      maxSelectedDate: DateTime(2026, 12, 31),
-    );
-
-    await tester.pumpWidget(MaterialApp(home: Scaffold(body: carousel)));
-
-    final pageViewFinder = find.byType(PageView);
-    final pageView = tester.widget<PageView>(pageViewFinder);
-    final controller = pageView.controller!;
-    final initialPage = controller.page!;
-    final pageWidth = tester.getSize(pageViewFinder).width;
-
-    final gesture = await tester.startGesture(tester.getCenter(pageViewFinder));
-    await gesture.moveBy(Offset(-pageWidth * 0.1, 0));
-    await tester.pump();
-    await gesture.moveBy(Offset(-pageWidth * 0.55, 0));
-    await tester.pump(const Duration(milliseconds: 2));
-
-    expect(controller.page, greaterThan(initialPage + 0.5));
-    expect(controller.page, lessThan(initialPage + 0.9));
-
-    await gesture.up();
-    await tester.pump();
-  });
-
-  testWidgets('minSelectedDate compares by calendar day', (
-    WidgetTester tester,
-  ) async {
-    DateTime? pressedDay;
-    final selectedDay = DateTime(2026, 5, 13);
-    final minDay = DateTime(2026, 5, 12, 23, 59);
-
-    final carousel = CalendarCarousel(
-      weekFormat: true,
-      height: 200,
-      selectedDateTime: selectedDay,
-      targetDateTime: selectedDay,
-      minSelectedDate: minDay,
-      maxSelectedDate: DateTime(2026, 5, 31),
-      onDayPressed: (date, event) {
-        pressedDay = date;
-      },
-    );
+    final builtDates = <DateTime>[];
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: Container(child: carousel)),
+      _host(
+        CalendarCarousel<void>.week(
+          focusedDate: DateTime(2026, 1, 1),
+          firstDate: firstDate,
+          lastDate: lastDate,
+          firstDayOfWeek: CalendarWeekday.monday,
+          dayBuilder: (context, day) {
+            builtDates.add(day.date);
+            return Text('${day.date.day}');
+          },
+        ),
       ),
     );
 
-    await tester.tap(find.text('12'));
-    await tester.pump();
-
-    expect(pressedDay, isNotNull);
-    expect(pressedDay?.day, 12);
+    final uniqueDates = builtDates.toSet().toList()..sort();
+    expect(uniqueDates, <DateTime>[
+      DateTime(2025, 12, 29),
+      DateTime(2025, 12, 30),
+      DateTime(2025, 12, 31),
+      DateTime(2026, 1, 1),
+      DateTime(2026, 1, 2),
+      DateTime(2026, 1, 3),
+      DateTime(2026, 1, 4),
+    ]);
   });
 
-  testWidgets('updates minSelectedDate when widget changes', (
+  testWidgets('tap reports the rendered immutable event snapshot once', (
     WidgetTester tester,
   ) async {
-    DateTime? pressedDay;
-    final selectedDay = DateTime(2026, 5, 13);
+    final release = _Release('3.0');
+    var targetCalls = 0;
+    DateTime? pressedDate;
+    List<_Release>? pressedEvents;
 
-    Widget buildCalendar(DateTime minSelectedDate) {
-      return MaterialApp(
-        home: Scaffold(
-          body: CalendarCarousel(
-            weekFormat: true,
-            height: 200,
-            selectedDateTime: selectedDay,
-            targetDateTime: selectedDay,
-            minSelectedDate: minSelectedDate,
-            maxSelectedDate: DateTime(2026, 5, 31),
-            onDayPressed: (date, event) {
-              pressedDay = date;
-            },
+    await tester.pumpWidget(
+      _host(
+        CalendarCarousel<_Release>.month(
+          focusedDate: focus,
+          firstDate: firstDate,
+          lastDate: lastDate,
+          eventsForDate: (date) {
+            if (date == focus) {
+              targetCalls++;
+              return <_Release>[release];
+            }
+            return const <_Release>[];
+          },
+          onDateSelected: (date, events) {
+            pressedDate = date;
+            pressedEvents = events;
+          },
+        ),
+      ),
+    );
+    final callsAfterBuild = targetCalls;
+
+    await tester.tap(find.byKey(ValueKey<DateTime>(focus)));
+    await tester.pump();
+
+    expect(pressedDate, focus);
+    expect(pressedEvents, <_Release>[release]);
+    expect(targetCalls, callsAfterBuild);
+    expect(
+      () => pressedEvents!.add(_Release('mutate')),
+      throwsUnsupportedError,
+    );
+  });
+
+  testWidgets('selectedDate remains controlled by the parent', (
+    WidgetTester tester,
+  ) async {
+    var selected = DateTime(2026, 5, 13);
+    late StateSetter updateHost;
+
+    await tester.pumpWidget(
+      _hostBuilder((context, setState) {
+        updateHost = setState;
+        return CalendarCarousel<void>.month(
+          selectedDate: selected,
+          focusedDate: focus,
+          firstDate: firstDate,
+          lastDate: lastDate,
+          onDateSelected: (date, events) {},
+          dayBuilder: (context, day) => Text(
+            '${day.date.day}:${day.isSelected}',
+            key: ValueKey<String>('day-${day.date.toIso8601String()}'),
           ),
+        );
+      }),
+    );
+
+    expect(find.text('13:true'), findsOneWidget);
+    await tester.tap(find.byKey(ValueKey<DateTime>(DateTime(2026, 5, 14))));
+    await tester.pump();
+    expect(find.text('13:true'), findsOneWidget);
+    expect(find.text('14:false'), findsOneWidget);
+
+    updateHost(() => selected = DateTime(2026, 5, 14));
+    await tester.pump();
+    expect(find.text('13:false'), findsOneWidget);
+    expect(find.text('14:true'), findsOneWidget);
+  });
+
+  testWidgets('disabled dates expose no tap or long-press callbacks', (
+    WidgetTester tester,
+  ) async {
+    final disabled = DateTime(2026, 5, 13);
+    var taps = 0;
+    var longPresses = 0;
+    await tester.pumpWidget(
+      _host(
+        CalendarCarousel<void>.month(
+          focusedDate: disabled,
+          firstDate: firstDate,
+          lastDate: lastDate,
+          isDateEnabled: (date) => date != disabled,
+          onDateSelected: (date, events) => taps++,
+          onDateLongPressed: (date) => longPresses++,
         ),
+      ),
+    );
+
+    final day = find.byKey(ValueKey<DateTime>(disabled));
+    await tester.tap(day);
+    await tester.longPress(day);
+    await tester.pump();
+    expect(taps, 0);
+    expect(longPresses, 0);
+  });
+
+  testWidgets('enabled long press reports the exact local civil date', (
+    WidgetTester tester,
+  ) async {
+    DateTime? reported;
+    await tester.pumpWidget(
+      _host(
+        CalendarCarousel<void>.month(
+          focusedDate: focus,
+          firstDate: firstDate,
+          lastDate: lastDate,
+          onDateLongPressed: (date) => reported = date,
+        ),
+      ),
+    );
+
+    await tester.longPress(find.byKey(ValueKey<DateTime>(focus)));
+    await tester.pump();
+    expect(reported, focus);
+    expect(reported!.hour, 0);
+  });
+
+  testWidgets('focusedDate is clamped to the nearest configured page', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        CalendarCarousel<void>.month(
+          focusedDate: DateTime(2030),
+          firstDate: DateTime(2026, 8, 10),
+          lastDate: DateTime(2026, 10, 20),
+        ),
+      ),
+    );
+    expect(find.text('Oct 2026'), findsOneWidget);
+
+    await tester.pumpWidget(
+      _host(
+        CalendarCarousel<void>.month(
+          focusedDate: DateTime(2020),
+          firstDate: DateTime(2026, 8, 10),
+          lastDate: DateTime(2026, 10, 20),
+        ),
+      ),
+    );
+    await tester.pump();
+    expect(find.text('Aug 2026'), findsOneWidget);
+  });
+
+  testWidgets('inverted range fails with a clear public argument name', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      _host(
+        CalendarCarousel<void>(
+          firstDate: DateTime(2026, 2),
+          lastDate: DateTime(2026, 1),
+        ),
+      ),
+    );
+
+    final exception = tester.takeException();
+    expect(exception, isA<ArgumentError>());
+    expect(exception.toString(), contains('firstDate'));
+  });
+
+  testWidgets('showOutsideDays only hides adjacent dates in month view', (
+    WidgetTester tester,
+  ) async {
+    final outside = DateTime(2026, 3, 30);
+    await tester.pumpWidget(
+      _host(
+        CalendarCarousel<void>.month(
+          focusedDate: DateTime(2026, 4, 15),
+          firstDate: DateTime(2026, 3),
+          lastDate: DateTime(2026, 5, 31),
+          firstDayOfWeek: CalendarWeekday.monday,
+          layout: const CalendarLayoutConfig(showOutsideDays: false),
+        ),
+      ),
+    );
+    expect(
+      find.descendant(
+        of: find.byKey(ValueKey<DateTime>(outside)),
+        matching: find.byType(TextButton),
+      ),
+      findsNothing,
+    );
+
+    await tester.pumpWidget(
+      _host(
+        CalendarCarousel<void>.week(
+          focusedDate: DateTime(2026, 4, 1),
+          firstDate: DateTime(2026, 3),
+          lastDate: DateTime(2026, 5, 31),
+          firstDayOfWeek: CalendarWeekday.monday,
+          layout: const CalendarLayoutConfig(showOutsideDays: false),
+        ),
+      ),
+    );
+    await tester.pump();
+    for (var day = 30; day <= 31; day++) {
+      expect(
+        find.byKey(ValueKey<DateTime>(DateTime(2026, 3, day))),
+        findsOneWidget,
       );
     }
-
-    await tester.pumpWidget(buildCalendar(DateTime(2026, 5, 12)));
-    await tester.pumpWidget(buildCalendar(DateTime(2026, 5, 13)));
-
-    await tester.tap(find.text('12'));
-    await tester.pump();
-
-    expect(pressedDay, isNull);
+    for (var day = 1; day <= 5; day++) {
+      expect(
+        find.byKey(ValueKey<DateTime>(DateTime(2026, 4, day))),
+        findsOneWidget,
+      );
+    }
+    expect(find.byType(TextButton), findsNothing);
   });
 
-  testWidgets(
-    'make sure onDayLongPressed is called when the user press and hold',
-    (WidgetTester tester) async {
-      DateTime? longPressedDay;
-
-      final carousel = CalendarCarousel(
-        weekFormat: true,
-        height: 200,
-        onDayLongPressed: (date) {
-          longPressedDay = date;
-        },
-      );
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(body: Container(child: carousel)),
+  testWidgets('the calendar sizes itself from parent constraints', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Center(
+          child: SizedBox(
+            width: 320,
+            height: 420,
+            child: CalendarCarousel<void>.month(
+              focusedDate: focus,
+              firstDate: firstDate,
+              lastDate: lastDate,
+            ),
+          ),
         ),
-      );
+      ),
+    );
 
-      expect(find.byWidget(carousel), findsOneWidget);
-
-      expect(longPressedDay, isNull);
-
-      await tester.longPress(
-        find.text(DateTime.now().subtract(Duration(days: 1)).day.toString()),
-      );
-      await tester.pump();
-
-      expect(longPressedDay, isNotNull);
-    },
-  );
-
-  testWidgets(
-    'should do nothing when the user press and hold and onDayLongPressed is not provided',
-    (WidgetTester tester) async {
-      final carousel = CalendarCarousel(weekFormat: true, height: 200);
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(body: Container(child: carousel)),
-        ),
-      );
-
-      expect(find.byWidget(carousel), findsOneWidget);
-
-      await tester.longPress(
-        find.text(DateTime.now().subtract(Duration(days: 1)).day.toString()),
-      );
-      await tester.pump();
-    },
-  );
+    expect(
+      tester.getSize(find.byType(CalendarCarousel<void>)),
+      const Size(320, 420),
+    );
+    expect(tester.takeException(), isNull);
+  });
 }
+
+class _Release {
+  const _Release(this.name);
+
+  final String name;
+
+  @override
+  bool operator ==(Object other) => other is _Release && other.name == name;
+
+  @override
+  int get hashCode => name.hashCode;
+}
+
+Widget _host(Widget child) => MaterialApp(
+  locale: const Locale('en', 'US'),
+  home: Scaffold(body: SizedBox(width: 420, height: 520, child: child)),
+);
+
+Widget _hostBuilder(
+  Widget Function(BuildContext context, StateSetter setState) builder,
+) => MaterialApp(
+  locale: const Locale('en', 'US'),
+  home: Scaffold(
+    body: SizedBox(
+      width: 420,
+      height: 520,
+      child: StatefulBuilder(builder: builder),
+    ),
+  ),
+);

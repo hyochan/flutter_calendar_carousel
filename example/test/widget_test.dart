@@ -1,60 +1,143 @@
-// This is a basic Flutter widget test.
-// To perform an interaction with a widget in your test, use the WidgetTester utility that Flutter
-// provides. For example, you can send tap and scroll gestures. You can also use WidgetTester to
-// find child widgets in the widget tree, read text, and verify that the values of widget properties
-// are correct.
-
 import 'package:flutter/material.dart';
-import 'package:flutter_calendar_carousel/classes/event.dart';
+import 'package:example/main.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  DateTime? pressedDay;
-  testWidgets('Default test for Calendar Carousel', (
-    WidgetTester tester,
-  ) async {
-    //  Build our app and trigger a frame.
-    final carousel = CalendarCarousel(
-      daysHaveCircularBorder: null,
-      weekendTextStyle: TextStyle(color: Colors.red),
-      thisMonthDayBorderColor: Colors.grey,
-      headerText: 'Custom Header',
-      weekFormat: true,
-      height: 200,
-      showIconBehindDayText: true,
-      customGridViewPhysics: NeverScrollableScrollPhysics(),
-      markedDateShowIcon: true,
-      markedDateIconMaxShown: 2,
-      selectedDayTextStyle: TextStyle(color: Colors.yellow),
-      todayTextStyle: TextStyle(color: Colors.blue),
-      markedDateIconBuilder: (Event event) {
-        return event.icon ?? Icon(Icons.help_outline);
-      },
-      todayButtonColor: Colors.transparent,
-      todayBorderColor: Colors.green,
-      markedDateMoreShowTotal: true,
-      // null for not showing hidden events indicator
-      onDayPressed: (date, event) {
-        pressedDay = date;
-      },
+  testWidgets('switches the demo between month and week views', (tester) async {
+    final initialDate = DateTime(2026, 5, 13);
+    await tester.pumpWidget(CalendarDemoApp(initialDate: initialDate));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Calendar Carousel'), findsOneWidget);
+    expect(_calendar(tester).view, CalendarView.month);
+    expect(_calendar(tester).selectedDate, initialDate);
+    expect(_calendar(tester).focusedDate, initialDate);
+
+    await tester.tap(find.text('Week'));
+    await tester.pumpAndSettle();
+
+    expect(_calendar(tester).view, CalendarView.week);
+    expect(_calendar(tester).selectedDate, initialDate);
+    final localizations = MaterialLocalizations.of(
+      tester.element(find.byType(CalendarDemoPage)),
     );
-    await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(body: Container(child: carousel)),
+    final sundayBasedWeekday = initialDate.weekday % DateTime.daysPerWeek;
+    final distance =
+        (sundayBasedWeekday -
+            localizations.firstDayOfWeekIndex +
+            DateTime.daysPerWeek) %
+        DateTime.daysPerWeek;
+    final weekStart = DateTime(
+      initialDate.year,
+      initialDate.month,
+      initialDate.day - distance,
+    );
+    final weekEnd = DateTime(
+      weekStart.year,
+      weekStart.month,
+      weekStart.day + 6,
+    );
+    expect(_calendar(tester).focusedDate, weekStart);
+    expect(
+      find.text(
+        'Visible: ${localizations.formatShortDate(weekStart)} – '
+        '${localizations.formatShortDate(weekEnd)}',
       ),
+      findsOneWidget,
     );
+    expect(find.text('Today'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 
-    expect(find.byWidget(carousel), findsOneWidget);
+  testWidgets('selects events, handles long press, Today, and paging', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(800, 1000);
+    addTearDown(tester.view.reset);
 
-    expect(pressedDay, isNull);
+    final initialDate = DateTime(2026, 5, 13);
+    await tester.pumpWidget(CalendarDemoApp(initialDate: initialDate));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Team sync'), findsOneWidget);
+    expect(find.text('Release'), findsNothing);
 
     await tester.tap(
-      find.text(DateTime.now().subtract(Duration(days: 1)).day.toString()),
+      find.bySemanticsLabel(RegExp(r'^May 15, 2026[\s\S]*2 events$')),
     );
+    await tester.pumpAndSettle();
 
+    expect(find.text('Release'), findsOneWidget);
+    expect(find.text('Release notes'), findsOneWidget);
+    expect(_calendar(tester).selectedDate, DateTime(2026, 5, 15));
+    expect(_calendar(tester).focusedDate, DateTime(2026, 5, 15));
+
+    await tester.longPress(find.bySemanticsLabel('May 14, 2026'));
     await tester.pump();
+    expect(find.textContaining('Long pressed'), findsOneWidget);
 
-    expect(pressedDay, isNotNull);
+    await tester.tap(find.text('Today'));
+    await tester.pumpAndSettle();
+    expect(find.text('Team sync'), findsOneWidget);
+    expect(find.text('Release'), findsNothing);
+    expect(_calendar(tester).selectedDate, initialDate);
+    expect(_calendar(tester).focusedDate, initialDate);
+
+    await tester.tap(find.widgetWithIcon(IconButton, Icons.chevron_right));
+    await tester.pumpAndSettle();
+    expect(find.text('Visible: June 2026'), findsOneWidget);
+    expect(_calendar(tester).selectedDate, initialDate);
+    expect(_calendar(tester).focusedDate, DateTime(2026, 6));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('keeps page controls usable on narrow screens with large text', (
+    tester,
+  ) async {
+    tester.view.devicePixelRatio = 1;
+    tester.view.physicalSize = const Size(220, 700);
+    tester.platformDispatcher.textScaleFactorTestValue = 3;
+    addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
+    await tester.pumpWidget(
+      CalendarDemoApp(initialDate: DateTime(2026, 5, 13)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Visible: May 2026'), findsOneWidget);
+    expect(find.byTooltip('Today'), findsOneWidget);
+    expect(
+      find.widgetWithIcon(IconButton, Icons.today_rounded),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
+
+    await tester.tap(find.text('Week'));
+    await tester.pumpAndSettle();
+
+    expect(
+      tester
+          .widget<SegmentedButton<CalendarView>>(
+            find.byType(SegmentedButton<CalendarView>),
+          )
+          .selected,
+      <CalendarView>{CalendarView.week},
+    );
+    expect(find.textContaining('Visible:'), findsOneWidget);
+    final todayButton = find.widgetWithIcon(IconButton, Icons.today_rounded);
+    final todayButtonRect = tester.getRect(todayButton);
+    expect(todayButtonRect.top, greaterThanOrEqualTo(0));
+    expect(todayButtonRect.bottom, lessThanOrEqualTo(700));
+    await tester.tap(todayButton);
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
   });
 }
+
+CalendarCarousel<DemoEvent> _calendar(WidgetTester tester) =>
+    tester.widget<CalendarCarousel<DemoEvent>>(
+      find.byType(CalendarCarousel<DemoEvent>),
+    );

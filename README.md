@@ -1,188 +1,297 @@
 # flutter_calendar_carousel
 
-[![Pub Version](https://img.shields.io/pub/v/flutter_calendar_carousel.svg?style=flat-square)](https://pub.dartlang.org/packages/flutter_calendar_carousel)
+[![Pub Version](https://img.shields.io/pub/v/flutter_calendar_carousel.svg?style=flat-square)](https://pub.dev/packages/flutter_calendar_carousel)
 [![Flutter CI](https://github.com/hyochan/flutter_calendar_carousel/actions/workflows/ci.yml/badge.svg)](https://github.com/hyochan/flutter_calendar_carousel/actions/workflows/ci.yml)
-[![Coverage Status](https://codecov.io/gh/hyochan/flutter_calendar_carousel/branch/master/graph/badge.svg?token=KTrSs3fGsS)](https://codecov.io/gh/hyochan/flutter_calendar_carousel)
+[![Coverage Status](https://codecov.io/gh/hyochan/flutter_calendar_carousel/branch/main/graph/badge.svg?token=KTrSs3fGsS)](https://codecov.io/gh/hyochan/flutter_calendar_carousel)
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-Calendar widget for flutter that is swipeable horizontally. This widget can help you build your own calendar widget highly customizable. Now you can even add your icon for each event.
+An accessible, theme-aware Flutter calendar with lazy month and week paging,
+controlled dates, typed events, and concise customization APIs.
 
-## Notice
-This widget is compatible with flutter V3 from version `2.4.+`.
+![Month and week calendar navigation with event selection](doc/calendar-demo.gif)
 
-## New Feature
-
-[2.0.3]
-
-- Multiple days selection using `addRange` method [#285](https://github.com/hyochan/flutter_calendar_carousel/pull/285)
-
-- Check out great feature `customDayBuilder` work done by [maxgmer](https://github.com/maxgmer) :tada:.
-
-#### Rectangular style
-
-![image](https://raw.githubusercontent.com/hyochan/flutter_calendar_carousel/master/doc/calendar1.gif)
-
-#### Circular style
-
-![image](https://raw.githubusercontent.com/hyochan/flutter_calendar_carousel/master/doc/calendar2.gif)
-
-#### No border
-
-![image](https://raw.githubusercontent.com/hyochan/flutter_calendar_carousel/master/doc/calendar3.gif)
-
-#### Marked Dates
-
-![image](https://raw.githubusercontent.com/hyochan/flutter_calendar_carousel/master/doc/calendar4.gif)
-
-#### Custom Icon Events
-
-![image](https://raw.githubusercontent.com/icemanbsi/flutter_calendar_carousel/master/doc/calendar5.gif)
-
-## Getting Started
-
-For help getting started with Flutter, view our online
-[documentation](https://flutter.io/).
-
-## Props
-
-| props                          |           types            |                                                defaultValues                                                |
-| :----------------------------- | :------------------------: | :---------------------------------------------------------------------------------------------------------: |
-| viewPortFraction               |          `double`          |                                                     1.0                                                     |
-| prevDaysTextStyle              |        `TextStyle`         |                                                                                                             |
-| daysTextStyle                  |        `TextStyle`         |                                                                                                             |
-| nextDaysTextStyle              |        `TextStyle`         |                                                                                                             |
-| prevMonthDayBorderColor        |          `Color`           |                                             Colors.transparent                                              |
-| thisMonthDayBorderColor        |          `Color`           |                                             Colors.transparent                                              |
-| nextMonthDayBorderColor        |          `Color`           |                                             Colors.transparent                                              |
-| dayPadding                     |          `double`          |                                                     2.0                                                     |
-| height                         |          `double`          |                                               double.infinity                                               |
-| width                          |          `double`          |                                               double.infinity                                               |
-| todayTextStyle                 |        `TextStyle`         |                                    `fontSize: 14.0, color: Colors.white`                                    |
-| dayButtonColor                 |          `Color`           |                                                 Colors.red                                                  |
-| todayBorderColor               |          `Color`           |                                                 Colors.red                                                  |
-| todayButtonColor               |          `Colors`          |                                                 Colors.red                                                  |
-| selectedDateTime               |         `DateTime`         |                                                                                                             |
-| selectedDayTextStyle           |        `TextStyle`         |                                    `fontSize: 14.0, color: Colors.white`                                    |
-| selectedDayBorderColor         |          `Color`           |                                                Colors.green                                                 |
-| selectedDayButtonColor         |          `Color`           |                                                Colors.green                                                 |
-| daysHaveCircularBorder         |           `bool`           |                                                                                                             |
-| onDayPressed                   |           `Func`           |                                                                                                             |
-| weekdayTextStyle               |        `TextStyle`         |                                 `fontSize: 14.0, color: Colors.deepOrange`                                  |
-| iconColor                      |          `Color`           |                                              Colors.blueAccent                                              |
-| headerTextStyle                |        `TextStyle`         |                                    `fontSize: 20.0, color: Colors.blue`                                     |
-| headerText                     |           `Text`           |                            `Text('${DateFormat.yMMM().format(this._dates[1])}'`)                            |
-| weekendTextStyle               |        `TextStyle`         |                                 `fontSize: 14.0, color: Colors.pinkAccent`                                  |
-| markedDatesMap                 |          `Events`          |                                                   `null`                                                    |
-| markedDateWidget               |          `Widget`          | `Positioned(child: Container(color: Colors.blueAccent, height: 4.0, width: 4.0), bottom: 4.0, left: 18.0);` |
-| markedDateShowIcon             |           `bool`           |                                                    false                                                    |
-| markedDateIconBorderColor      |          `Color`           |                                                                                                             |
-| markedDateIconMaxShown         |           `int`            |                                                      2                                                      |
-| markedDateIconMargin           |          `double`          |                                                     5.0                                                     |
-| markedDateIconBuilder          | `MarkedDateIconBuilder<T>` |                                                                                                             |
-| markedDateIconOffset           |          `double`          |                                                     5.0                                                     |
-| markedDateCustomShapeBorder    |       `ShapeBorder`        |                                                    null                                                     |
-| markedDateCustomTextStyle      |        `TextStyle`         |                                                    null                                                     |
-| markedDateMoreCustomDecoration |        `Decoration`        |                                                                                                             |
-| markedDateMoreCustomTextStyle  |        `TextStyle`         |                                                                                                             |
-| headerMargin                   |       `EdgetInsets`        |                                `const EdgeInsets.symmetric(vertical: 16.0)`                                 |
-| headerTitleTouchable           |           `bool`           |                                                   `false`                                                   |
-| onHeaderTitlePressed           |         `Function`         |                                       `() => _selectDateFromPicker()`                                       |
-| showHeader                     |           `bool`           |                                                                                                             |
-| showHeaderButton               |           `bool`           |                                                                                                             |
-| childAspectRatio               |          `double`          |                                                    `1.0`                                                    |
-| weekDayMargin                  |        `EdgeInsets`        |                                    `const EdgeInsets.only(bottom: 4.0)`                                     |
-| weekFormat                     |           `bool`           |                                                   `false`                                                   |
-| locale                         |          `String`          |                                                    `en`                                                     |
-| firstDayOfWeek                 |           `int`            |                                                   `null`                                                    |
-| onCalendarChanged              |    `Function(DateTime)`    |                                                                                                             |
-| minSelectedDate                |         `DateTime`         |                                                                                                             |
-| maxSelectedDate                |         `DateTime`         |                                                                                                             |
-| inactiveDaysTextStyle          |        `TextStyle`         |                                                                                                             |
-| inactiveWeekendTextStyle       |        `TextStyle`         |                                                                                                             |
-| weekDayFormat                  |      `WeekdayFormat`       |                                                   `short`                                                   |
-| staticSixWeekFormat            |           `bool`           |                                                   `false`                                                   |
-| showOnlyCurrentMonthDate       |           `bool`           |                                                   `false`                                                   |
-| dayCrossAxisAlignment          |    `CrossAxisAlignment`    |                                         `CrossAxisAlignment.center`                                         |
-| dayMainAxisAlignment           |    `MainAxisAlignment`     |                                           `CrossAlignment.center`                                           |
-| showIconBehindDayText          |           `bool`           |                                                   `false`                                                   |
-| pageScrollPhysics              |      `ScrollPhysics`       |                                               `ScrollPhysics`                                               |
-
-With `CalendarCarousel<YourEventClass>` and `EventList<YourEventClass>` you can specifiy a custom Event class.
+The example demonstrates controlled selection, event markers, and consistent
+month and week navigation.
 
 ## Install
 
-Add `flutter_calendar_carousel` as a dependency in pubspec.yaml
-For help on adding as a dependency, view the [documentation](https://flutter.io/using-packages/).
-
-## Usage
+```shell
+flutter pub add flutter_calendar_carousel
+```
 
 ```dart
-import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart' show CalendarCarousel;
-Widget widget() {
-  return Container(
-    margin: EdgeInsets.symmetric(horizontal: 16.0),
-    child: CalendarCarousel<Event>(
-      onDayPressed: (DateTime date, List<Event> events) {
-        this.setState(() => _currentDate = date);
-      },
-      weekendTextStyle: TextStyle(
-        color: Colors.red,
-      ),
-      thisMonthDayBorderColor: Colors.grey,
-//      weekDays: null, /// for pass null when you do not want to render weekDays
-//      headerText: Container( /// Example for rendering custom header
-//        child: Text('Custom Header'),
-//      ),
-      customDayBuilder: (   /// you can provide your own build function to make custom day containers
-        bool isSelectable,
-        int index,
-        bool isSelectedDay,
-        bool isToday,
-        bool isPrevMonthDay,
-        TextStyle textStyle,
-        bool isNextMonthDay,
-        bool isThisMonthDay,
-        DateTime day,
-      ) {
-          /// If you return null, [CalendarCarousel] will build container for current [day] with default function.
-          /// This way you can build custom containers for specific days only, leaving rest as default.
+import 'package:flutter/material.dart';
+import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
+```
 
-          // Example: every 15th of month, we have a flight, we can place an icon in the container like that:
-          if (day.day == 15) {
-            return Center(
-              child: Icon(Icons.local_airport),
-            );
-          } else {
-            return null;
-          }
-      },
-      weekFormat: false,
-      markedDatesMap: _markedDateMap,
-      height: 420.0,
-      selectedDateTime: _currentDate,
-      daysHaveCircularBorder: false, /// null for not rendering any border, true for circular border, false for rectangular border
-    ),
-  );
+The package requires Dart `>=3.8.0 <4.0.0`.
+
+## Quick start
+
+Give the calendar a bounded height and keep selection in your widget state:
+
+```dart
+class CalendarExample extends StatefulWidget {
+  const CalendarExample({super.key});
+
+  @override
+  State<CalendarExample> createState() => _CalendarExampleState();
+}
+
+class _CalendarExampleState extends State<CalendarExample> {
+  DateTime _selectedDate = DateTime.now();
+  DateTime _focusedDate = DateTime.now();
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 420,
+      child: CalendarCarousel<String>.month(
+        selectedDate: _selectedDate,
+        focusedDate: _focusedDate,
+        onDateSelected: (DateTime date, List<String> events) {
+          setState(() {
+            _selectedDate = date;
+            _focusedDate = date;
+          });
+        },
+        onPageChanged: (DateTime pageAnchor) {
+          setState(() => _focusedDate = pageAnchor);
+        },
+      ),
+    );
+  }
 }
 ```
 
-### TODO
+Use `CalendarCarousel<T>.week(...)` for a seven-day page. Use the default
+constructor with `view: CalendarView.month` or `CalendarView.week` when the view
+changes at runtime.
 
-- [x] Render weekdays.
-- [x] Customizable headerWidget.
-- [x] Set weekdays visibility.
-- [x] Customizable textStyles for days in weekend.
-- [x] Marked Dates.
-- [x] Multiple Marked Dates.
-- [x] Customizable weekend days.
-- [x] Week Calendar.
-- [x] Carousel Week Calendar.
-- [ ] Multiple days selections.
-- [x] Widget test.
+## Selection and navigation
 
-## Help Maintenance
+`selectedDate` and `focusedDate` are controlled values:
 
-I've been maintaining quite many repos these days and burning out slowly. If you could help me cheer up, buying me a cup of coffee will make my life really happy and get much energy out of it.
-<br/>
-<a href="https://www.buymeacoffee.com/dooboolab" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/purple_img.png" alt="Buy Me A Coffee" style="height: auto !important;width: auto !important;" ></a>
-[![Paypal](https://www.paypalobjects.com/webstatic/mktg/Logo/pp-logo-100px.png)](https://paypal.me/dooboolab)
+- `selectedDate` determines which day is visually selected. A tap does not
+  mutate it; update it from `onDateSelected`.
+- `focusedDate` requests the visible month or week. Update it for external
+  navigation such as a Today button.
+- `onPageChanged` reports the first day of the visible month or the configured
+  first day of the visible week.
+
+Omit `onDateSelected` to render dates without tap actions. Use `isDateEnabled`
+for per-date availability, and `firstDate`/`lastDate` for the navigable range.
+The default range spans 100 years before and after today's civil date.
+
+## Application events
+
+The calendar accepts your application model directly. Index events by local,
+date-only keys and resolve them with `eventsForDate`:
+
+```dart
+class Meeting {
+  const Meeting(this.title, this.color);
+
+  final String title;
+  final Color color;
+}
+
+final Map<DateTime, List<Meeting>> meetingsByDate =
+    <DateTime, List<Meeting>>{
+      DateTime(2026, 8, 15): const <Meeting>[
+        Meeting('Release', Colors.indigo),
+      ],
+    };
+
+List<Meeting> meetingsForDate(DateTime date) =>
+    meetingsByDate[date] ?? const <Meeting>[];
+
+Widget buildMeetingCalendar() => CalendarCarousel<Meeting>.month(
+  focusedDate: DateTime(2026, 8, 15),
+  eventsForDate: meetingsForDate,
+  markerBuilder: (BuildContext context, CalendarDayDetails<Meeting> day) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Icon(Icons.circle, size: 6, color: day.events.first.color),
+    );
+  },
+);
+```
+
+`eventsForDate` can run again during rebuilds, so keep it synchronous, pure,
+and inexpensive. `CalendarDayDetails.events` and the list passed to
+`onDateSelected` are immutable snapshots. A custom `markerBuilder` runs once
+for each visible date with events; returning `null` hides that date's marker.
+
+Without a custom builder, the built-in marker renders at most
+`theme.marker.maxVisible` dots and an optional overflow count. Its English
+semantic fallback is `1 event` or `<count> events`; localize that announcement
+without replacing the visual marker:
+
+```dart
+final markerTheme = CalendarCarouselThemeData(
+  marker: CalendarMarkerStyle(
+    semanticLabelBuilder: (BuildContext context, int count) =>
+        count == 1 ? '1 appointment' : '$count appointments',
+  ),
+);
+```
+
+## Configuration and theming
+
+Related options are grouped instead of exposed as dozens of constructor
+parameters:
+
+```dart
+Widget buildStyledCalendar() => CalendarCarousel<Meeting>.month(
+  header: const CalendarHeaderConfig(
+    enableDatePicker: true,
+    showNavigationButtons: true,
+  ),
+  weekdays: const CalendarWeekdayConfig(
+    format: CalendarWeekdayFormat.short,
+  ),
+  layout: const CalendarLayoutConfig(
+    fixedSixWeeks: true,
+    showOutsideDays: false,
+  ),
+  paging: const CalendarPagingConfig(axis: Axis.horizontal),
+  theme: const CalendarCarouselThemeData(
+    selected: CalendarDayStyle(
+      backgroundColor: Colors.indigo,
+      textStyle: TextStyle(color: Colors.white),
+    ),
+    marker: CalendarMarkerStyle(color: Colors.deepOrange, maxVisible: 3),
+  ),
+);
+```
+
+The day-style priority is base → weekend → outside month → with events →
+`dayStyleResolver` → today → disabled → selected. Partial styles inherit
+unspecified values from the ambient Material theme. Outside-month position and
+styling apply only to month pages; every date in a seven-day week page reports
+`CalendarMonthPosition.current`.
+
+When `paging.viewportFraction` is below one, month pages suppress outside-month
+dates even if `showOutsideDays` is true. This prevents a page and its visible
+preview from rendering the same civil date twice.
+
+Use `dayStyleResolver` for date-specific colors and shapes. Use `dayBuilder`
+when the visual content itself must change:
+
+```dart
+final CalendarDayBuilder<Meeting> meetingDayBuilder =
+    (BuildContext context, CalendarDayDetails<Meeting> day) {
+      if (day.events.isEmpty) return null;
+      return Center(
+        child: Text('${day.date.day} ★', style: day.style.textStyle),
+      );
+    };
+```
+
+Returning `null` from `dayBuilder` keeps the default day number.
+
+## Dates and locales
+
+The calendar treats `DateTime` values as civil year/month/day carriers and
+compares only those components. Resolver and callback values use local midnight
+when it exists. If a timezone transition skips midnight but not the complete
+date, Dart normalizes the value to the first representable local time (often
+01:00). If a historical offset change skips the complete civil day, the
+calendar uses UTC midnight as a lossless carrier for the same year, month, and
+day. Always compare and index calendar data by those components rather than by
+hour, instant, timezone offset, or `isUtc`.
+
+`locale` accepts a Flutter `Locale` and defaults to
+`Localizations.localeOf(context)`. Week labels, weekend detection, semantic
+date labels, and header formatting follow it. The built-in picker uses that
+locale when the app provides matching Material localizations and otherwise
+falls back safely. `firstDayOfWeek` accepts `CalendarWeekday`; when omitted,
+locale data decides.
+
+## Accessibility and responsive layouts
+
+When at least one date callback is configured, each date is one accessible
+button with a localized full-date label, selected state, and the available tap
+or long-press actions. A calendar with no date callbacks exposes readable date
+labels instead of announcing disabled buttons. `dayBuilder` and `markerBuilder`
+are placed inside the date semantics. Return visual content only—do not nest a
+button, gesture detector, or another interactive control. When a custom marker
+conveys information not repeated elsewhere, wrap it in a non-interactive
+`Semantics` label such as the localized event count.
+
+Test custom content at the narrowest supported width and largest text scale.
+The default header, weekday labels, day numbers, and overflow markers scale
+down within their available bounds. Below 120 logical pixels wide, the default
+header divides its width evenly between the previous, title, and next actions
+so all three remain available without overflowing. On wide, low-height month
+layouts, the calendar automatically raises the preferred day aspect ratio so
+every week remains visible instead of clipping later rows. In severely constrained
+heights, it preserves the day grid and a 24-logical-pixel budget per possible
+row by hiding the header before the weekday row; custom header and weekday
+content is bounded to the same layout. Below 144 logical pixels, a six-week
+month cannot physically retain 24 pixels per row; with vertical page previews,
+that threshold is `144 / viewportFraction`. The calendar still renders every
+row without overflow. `dayPadding` only insets visuals—the complete grid cell
+remains the date's hit and semantics target.
+
+## Performance contract
+
+- Month and week pages are generated lazily; the full configured date range is
+  never materialized.
+- Date arithmetic uses civil components, avoiding daylight-saving drift.
+- `eventsForDate`, `dayStyleResolver`, and builders should be pure and cheap.
+- The default marker does work proportional to `maxVisible`, not the total
+  number of events.
+- A custom marker builder is called once per event-bearing visible day build;
+  bound any per-event work inside it.
+
+## Migrating from 2.x to 3.0
+
+3.0 intentionally removes the compatibility layer. There are no deprecated
+shims or model adapters.
+
+| 2.x API | 3.0 replacement |
+| --- | --- |
+| `CalendarCarousel(..., weekFormat: false)` | `CalendarCarousel.month(...)` |
+| `CalendarCarousel(..., weekFormat: true)` | `CalendarCarousel.week(...)` |
+| `selectedDateTime` | `selectedDate` |
+| `targetDateTime` | `focusedDate` |
+| `onDayPressed` | `onDateSelected` |
+| `onDayLongPressed` | `onDateLongPressed` |
+| `onCalendarChanged` | `onPageChanged` |
+| `minSelectedDate`, `maxSelectedDate` | `firstDate`, `lastDate` |
+| `inactiveDates`, `disableDayPressed` | `isDateEnabled` or omit `onDateSelected` |
+| String `locale` | Flutter `Locale` |
+| Integer `firstDayOfWeek` | `CalendarWeekday` |
+| `Event`, `EventInterface`, `EventList`, `markedDatesMap` | Application model + date-only map + `eventsForDate` |
+| `MarkedDate`, `MultipleMarkedDates` | `dayStyleResolver` |
+| `customDayBuilder` | `dayBuilder(context, CalendarDayDetails<T>)` |
+| Marker widget/icon/overflow options, `maxDot`, `showIconBehindDayText` | `markerBuilder` and `CalendarMarkerStyle` |
+| `markedDateCustomShapeBorder`, `markedDateCustomTextStyle` | `theme.withEvents` |
+| Individual day/today/selected/weekend/inactive colors, text, borders, shapes, and alignment | `CalendarCarouselThemeData` and `CalendarDayStyle` |
+| Header visibility, icons, title interaction, margins, callbacks | `CalendarHeaderConfig`, `CalendarHeaderStyle`, or `CalendarHeaderConfig.builder` |
+| `weekDay*`, `WeekdayFormat`, `customWeekDayBuilder` | `CalendarWeekdayConfig`, `CalendarWeekdayFormat`, `CalendarWeekdayStyle` |
+| `staticSixWeekFormat`, `showOnlyCurrentMonthDate`, `childAspectRatio`, `dayPadding` | `CalendarLayoutConfig` |
+| `isScrollable`, `scrollDirection`, `pageScrollPhysics`, `viewportFraction` | `CalendarPagingConfig` |
+| `width`, `height` | Parent constraints such as `SizedBox` |
+| `pageSnapping` | Removed; calendar pages always snap |
+| `customGridViewPhysics`, `shouldShowTransform` | Removed with no replacement |
+| Deep imports from `classes/` | Import the package entrypoint only |
+
+## Example app
+
+See the [example app](https://github.com/hyochan/flutter_calendar_carousel/tree/main/example)
+for controlled month/week switching, application events, custom markers,
+theming, date-picker navigation, and large-text responsive behavior.
+
+## Support
+
+Report bugs and feature requests in the
+[GitHub issue tracker](https://github.com/hyochan/flutter_calendar_carousel/issues).
+
+If this package helps your project, you can support its maintenance through
+[Buy Me a Coffee](https://www.buymeacoffee.com/dooboolab) or
+[PayPal](https://paypal.me/dooboolab).
+
+Released under the [MIT License](https://github.com/hyochan/flutter_calendar_carousel/blob/main/LICENSE).

@@ -7,7 +7,7 @@ or review a PR does not authorize any step in this release path.
 
 | Workflow | Trigger | Purpose |
 | --- | --- | --- |
-| `ci.yml` | relevant pushes/PRs to `main`, manual | Format, analyze, root/example tests, coverage, Android consumer build |
+| `ci.yml` | relevant pushes/PRs to `main`, manual | Format, analyze, root/example tests, 95% coverage floor, Android and JavaScript/Wasm Web consumer builds |
 | `auto-release.yml` | weekly/manual | Choose patch/minor or stop for a breaking release, then dispatch release |
 | `release.yml` | manual/auto-release dispatch | Validate, bump version, refresh example lock, changelog, commit, tag, GitHub Release |
 | `publish.yml` | `v*` tag | Authenticate with pub.dev OIDC, verify, and publish |
@@ -18,16 +18,25 @@ native consumer changes cannot bypass verification.
 
 ## Release Workflow
 
-`release.yml` accepts `patch`, `minor`, `major`, `current`, or `rc-bump`, plus
-prerelease and GitHub Release flags. Validation runs package dependency install,
-format, analysis, tests, and publish dry-run.
+`release.yml` accepts `patch`, `minor`, `major`, `current`, `rc-bump`, or
+`finalize`, plus prerelease and GitHub Release flags. `finalize` is valid only
+for an existing `-rc.N` version and removes that suffix without incrementing
+the base version. It carries the matching RC notes, including the original
+breaking-change and migration guidance, into the stable release notes.
+Every dispatch must target `refs/heads/main`; the workflow fails before checkout
+when another ref is selected. Validation then runs package dependency install,
+format, analysis, tests, and publish dry-run. Weekly automation also stops for
+a non-empty `[Unreleased]` `### Breaking changes` section, even when a squash
+commit omitted a breaking-change marker, so major releases remain explicit.
 
 For a new version the deploy job:
 
 1. Updates root `pubspec.yaml`.
 2. Runs `flutter pub get` in both the root and `example/`, which resolves the
    path dependency in `example/pubspec.lock` to the new package version.
-3. Regenerates the changelog section.
+3. Promotes the curated `[Unreleased]` notes into the new version and leaves a
+   fresh `[Unreleased]` section. Commit subjects are used only when curated
+   notes are empty.
 4. Stages `pubspec.yaml`, `CHANGELOG.md`, and `example/pubspec.lock` only. The
    ignored root lockfile is intentionally not force-added.
 5. Commits, tags `v{VERSION}`, pushes, and optionally creates a GitHub Release.
