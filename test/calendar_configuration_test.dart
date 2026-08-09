@@ -109,6 +109,26 @@ void main() {
       expect(resolved.backgroundColor, Colors.red);
     });
 
+    test('repeated empty merges preserve explicit marker values', () {
+      const empty = CalendarCarouselThemeData();
+      const custom = CalendarCarouselThemeData(
+        marker: CalendarMarkerStyle(
+          maxVisible: 5,
+          size: 6,
+          spacing: 1,
+          showOverflowCount: false,
+        ),
+      );
+
+      final mergedEmpty = empty.merge(empty);
+      final result = custom.merge(mergedEmpty);
+
+      expect(result.marker.maxVisible, 5);
+      expect(result.marker.size, 6);
+      expect(result.marker.spacing, 1);
+      expect(result.marker.showOverflowCount, isFalse);
+    });
+
     testWidgets('resolves defaults from the ambient Material theme', (
       WidgetTester tester,
     ) async {

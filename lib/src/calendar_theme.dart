@@ -160,12 +160,16 @@ class CalendarMarkerStyle {
       color: other.color ?? color,
       selectedColor: other.selectedColor ?? selectedColor,
       semanticLabelBuilder: other.semanticLabelBuilder ?? semanticLabelBuilder,
-      maxVisible: other._hasMaxVisible ? other.maxVisible : maxVisible,
-      size: other._hasSize ? other.size : size,
-      spacing: other._hasSpacing ? other.spacing : spacing,
+      maxVisible: other._hasMaxVisible
+          ? other.maxVisible
+          : (_hasMaxVisible ? maxVisible : null),
+      size: other._hasSize ? other.size : (_hasSize ? size : null),
+      spacing: other._hasSpacing
+          ? other.spacing
+          : (_hasSpacing ? spacing : null),
       showOverflowCount: other._hasShowOverflowCount
           ? other.showOverflowCount
-          : showOverflowCount,
+          : (_hasShowOverflowCount ? showOverflowCount : null),
     );
   }
 }
