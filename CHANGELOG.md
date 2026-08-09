@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [3.0.0] - 2026-08-09
+
 ### Breaking changes
 
 - Redesign the public API around controlled `selectedDate` and `focusedDate`
@@ -46,6 +48,7 @@
   build the Android example in CI.
 - Synchronize Codex and Claude repository workflows around shared issue, verification, commit, rebase, self-review, and five-minute PR review procedures.
 - Document the autonomous maintenance runbooks, PR review loop, and deployment workflow expectations ([#402](https://github.com/hyochan/flutter_calendar_carousel/pull/402)).
+
 
 ## [2.6.11] - 2026-08-08
 

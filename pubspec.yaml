@@ -1,6 +1,6 @@
 name: flutter_calendar_carousel
 description: An accessible, theme-aware Flutter calendar with lazy month and week paging, controlled dates, and typed event builders.
-version: 2.6.11
+version: 3.0.0
 homepage: https://github.com/hyochan/flutter_calendar_carousel
 
 environment:
