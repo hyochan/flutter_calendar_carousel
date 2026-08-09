@@ -31,7 +31,7 @@ jobs:
   build:
     name: Analyze, Format, Test
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
 
     steps:
       - name: Checkout
@@ -64,12 +64,71 @@ jobs:
       - name: Run tests with coverage
         run: flutter test --coverage
 
+      - name: Enforce 95% line coverage
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if ! coverage_summary=$(awk -F: -v minimum=95 '
+            /^LF:/ { lines += $2 }
+            /^LH:/ { covered += $2 }
+            END {
+              if (lines == 0) {
+                print "Coverage report contains no coverable lines."
+                exit 1
+              }
+              percentage = covered * 100 / lines
+              printf "Line coverage: %.2f%% (%d/%d); required: %.2f%%\n", percentage, covered, lines, minimum
+              if (covered * 100 < lines * minimum) exit 1
+            }
+          ' coverage/lcov.info); then
+            echo "$coverage_summary"
+            exit 1
+          fi
+          echo "$coverage_summary"
+
+      - name: Run daylight-saving date regressions
+        env:
+          TZ: America/New_York
+        run: flutter test test/src/calendar_date_utils_test.dart
+
+      - name: Run skipped local-midnight regressions (Sao Paulo)
+        env:
+          TZ: America/Sao_Paulo
+        run: flutter test test/src/calendar_date_utils_test.dart
+
+      - name: Run skipped civil-day regressions (Apia)
+        env:
+          TZ: Pacific/Apia
+        run: >-
+          flutter test test/src/calendar_date_utils_test.dart
+          test/src/calendar_month_layout_invariants_test.dart
+
+      - name: Run skipped civil-day regressions (Kwajalein)
+        env:
+          TZ: Pacific/Kwajalein
+        run: >-
+          flutter test test/src/calendar_date_utils_test.dart
+          test/src/calendar_month_layout_invariants_test.dart
+
       - name: Run example tests
         run: flutter test
         working-directory: example
 
       - name: Build Android example
         run: flutter build apk --debug
+        working-directory: example
+
+      - name: Configure Web example
+        run: flutter create --platforms=web .
+        working-directory: example
+
+      - name: Build JavaScript Web example
+        run: flutter build web --no-wasm-dry-run
+        working-directory: example
+
+      - name: Build Wasm Web example
+        run: flutter build web --wasm
         working-directory: example
 
       - name: Upload coverage to Codecov

@@ -52,6 +52,28 @@ jobs:
         run: |
           set -euo pipefail
 
+          # The curated changelog is the authoritative signal for an upcoming
+          # breaking release, even when a squash commit omits a Conventional
+          # Commits `!` or `BREAKING CHANGE` footer.
+          if awk '
+            /^## \[Unreleased\][[:space:]]*$/ {
+              unreleased = 1
+              next
+            }
+            unreleased && /^## \[/ { exit }
+            unreleased && /^###[[:space:]]+/ {
+              breaking = tolower($0) ~ /^###[[:space:]]+breaking changes[[:space:]]*$/
+              next
+            }
+            unreleased && breaking && /[^[:space:]]/ { found = 1 }
+            END { exit(found ? 0 : 1) }
+          ' CHANGELOG.md; then
+            echo "Curated breaking changes detected; skipping auto-release. A human should dispatch a major."
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+            echo "reason=curated breaking changes detected; human-dispatched major required" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           prev_tag=$(git tag --sort=-creatordate | head -n1 || true)
 
           if [ -z "$prev_tag" ]; then
@@ -72,7 +94,7 @@ jobs:
 
           messages=$(git log "${prev_tag}..HEAD" --format='%s%n%b')
 
-          # Detect breaking changes in commit messages or PR titles.
+          # Also detect breaking changes in commit messages or PR titles.
           # Supports Conventional Commits ("feat!:", "BREAKING CHANGE:") and free-form "BREAKING".
           if echo "$messages" | grep -Eqi '(^|\W)(BREAKING[ _-]?CHANGE|breaking)(\W|$)|!:' ; then
             echo "Breaking changes detected; skipping auto-release. A human should dispatch a major."

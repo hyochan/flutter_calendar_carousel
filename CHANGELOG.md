@@ -1,3 +1,52 @@
+## [Unreleased]
+
+### Breaking changes
+
+- Redesign the public API around controlled `selectedDate` and `focusedDate`
+  values, `onDateSelected`, `onDateLongPressed`, and `onPageChanged` callbacks.
+- Replace the 2.x boolean view selector with `CalendarCarousel.month`,
+  `CalendarCarousel.week`, and the explicit `CalendarView` enum.
+- Remove the package-owned event and marked-date models, adapter interfaces,
+  mutable event index, positional day builder, and their deep-import files.
+  Applications now provide their own model through `eventsForDate`.
+- Group header, weekday, layout, paging, theme, day-style, and marker options
+  into focused immutable configuration objects. Calendar size is now controlled
+  exclusively by parent constraints, and pages always snap.
+- Replace date lists and integer weekday indexes with `isDateEnabled`, Flutter
+  `Locale`, and the `CalendarWeekday` enum. The default range now spans 100
+  years before and after today.
+
+### Added and changed
+
+- Unify month and week navigation on a lazy, date-only pager that handles every
+  first-day-of-week value, year boundaries, range updates, and runtime view
+  changes consistently.
+- Add named day, marker, date-style, header, and weekday builders with immutable
+  details objects and Material-theme-aware defaults.
+- Limit the built-in event marker to a configured number of visible dots plus
+  one bounded overflow label; custom marker builders run once per marked day.
+- Fix controlled selection updates, duplicate page-change callbacks, external
+  focus navigation, date-picker lifecycle and locale fallback, and day
+  semantics.
+- Make rapid header navigation, vertical paging, far date-picker jumps, narrow
+  and wide layouts, large text, RTL ordering, and event overflow badges
+  deterministic and regression-tested.
+- Preserve complete day grids under constrained heights and vertical page
+  previews, keep hit targets at full-cell size, expose read-only dates as
+  labels, and add customizable event-count semantics with selected-marker
+  contrast.
+- Keep week views complete when month-only outside-date filtering is enabled,
+  and derive today, selection, weekend, and month flags from each cell's date.
+- Replace date-dependent tests and the previous example with deterministic
+  month/week regression coverage and a concise Material 3 demo.
+- Refresh and commit the example lockfile during automated version bumps to prevent recurring release drift ([#409](https://github.com/hyochan/flutter_calendar_carousel/issues/409)).
+- Provision pub.dev OIDC credentials in the publish workflow so tagged releases do not wait for interactive authentication ([#403](https://github.com/hyochan/flutter_calendar_carousel/issues/403)).
+- Update the example to `intl` 0.20.3, current Android build tooling, iOS 13/UIScene, and Flutter Swift Package Manager integration.
+- Add regression coverage for disabled-date predicates and page navigation, and
+  build the Android example in CI.
+- Synchronize Codex and Claude repository workflows around shared issue, verification, commit, rebase, self-review, and five-minute PR review procedures.
+- Document the autonomous maintenance runbooks, PR review loop, and deployment workflow expectations ([#402](https://github.com/hyochan/flutter_calendar_carousel/pull/402)).
+
 ## [2.6.11] - 2026-08-08
 
 - fix(maintenance): support current Flutter and release flows (#424)
@@ -60,17 +109,6 @@
 - docs: add autonomous maintenance runbooks
 - feat: support inactive dates
 - feat: support uppercase weekday labels
-
-## [Unreleased]
-
-- Refresh and commit the example lockfile during automated version bumps to prevent recurring release drift ([#409](https://github.com/hyochan/flutter_calendar_carousel/issues/409)).
-- Provision pub.dev OIDC credentials in the publish workflow so tagged releases do not wait for interactive authentication ([#403](https://github.com/hyochan/flutter_calendar_carousel/issues/403)).
-- Update the example to `intl` 0.20.3, current Android build tooling, iOS 13/UIScene, and Flutter Swift Package Manager integration.
-- Add regression coverage for inactive future dates and manual page scrolling, and build the Android example in CI.
-- Synchronize Codex and Claude repository workflows around shared issue, verification, commit, rebase, self-review, and five-minute PR review procedures.
-- Add `upperCaseWeekDays` to render weekday labels in uppercase, including values passed to custom weekday builders ([#392](https://github.com/hyochan/flutter_calendar_carousel/pull/392)).
-- Add `inactiveDates` to render specific dates as non-selectable and ignore taps on those dates ([#395](https://github.com/hyochan/flutter_calendar_carousel/pull/395)).
-- Document the autonomous maintenance runbooks, PR review loop, and deployment workflow expectations ([#402](https://github.com/hyochan/flutter_calendar_carousel/pull/402)).
 
 ## [2.5.7] - 2026-04-27
 
