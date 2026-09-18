@@ -214,6 +214,33 @@ locale when the app provides matching Material localizations and otherwise
 falls back safely. `firstDayOfWeek` accepts `CalendarWeekday`; when omitted,
 locale data decides.
 
+## Using with material_ui
+
+The calendar renders with the in-framework Material libraries
+(`package:flutter/material.dart`). If your app has migrated to the standalone
+`material_ui` package, wrap the app—or at least the calendar's subtree—in
+`MaterialUiCompatibilityBridge` so the calendar can resolve
+`MaterialLocalizations` and inherit your theme:
+
+```dart
+import 'package:material_ui/material_ui.dart';
+
+MaterialApp(
+  builder: (context, child) => MaterialUiCompatibilityBridge(child: child!),
+  home: const HomeScreen(),
+)
+```
+
+Place the bridge around the navigator child as shown so the built-in date
+picker is covered too. If you already use `builder`, incorporate the bridge
+into it. The bridge forwards `colorScheme`, `textTheme`, `visualDensity`, and
+`platform` only; app-level component themes such as `DatePickerThemeData` are
+not forwarded, so the built-in picker follows the bridged color scheme and text
+theme.
+
+Migrating the package itself to `material_ui` and `cupertino_ui` is tracked in
+[#431](https://github.com/hyochan/flutter_calendar_carousel/issues/431).
+
 ## Accessibility and responsive layouts
 
 When at least one date callback is configured, each date is one accessible
