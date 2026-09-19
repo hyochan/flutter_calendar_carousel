@@ -61,6 +61,10 @@ versions through `dependency_overrides` merely to report everything as latest.
 - Use English for public GitHub titles, bodies, reviews, replies, and commits.
 - Link fixes to issue numbers and preserve evidence for issues that are already
   fixed, externally blocked, duplicates, or platform limitations.
+- Label every issue and pull request from the existing label set, for example
+  `📖 documentation`, `🛫 ci`, `🚚 migration`, `⌚️ regression`, or
+  `:inbox_tray: compatibility`. Reuse repository labels instead of creating new
+  ones.
 - Reply to inline review comments through the inline reply API, not a new
   top-level PR comment.
 - Resolve a review thread only after its valid finding is fixed and pushed, or
