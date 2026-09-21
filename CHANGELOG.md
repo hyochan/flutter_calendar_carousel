@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [3.0.2] - 2026-09-21
+
+- docs(agents): require labels on issues and pull requests (#433)
+- docs(readme): document the material_ui compatibility bridge (#432)
+
+
 ## [3.0.1] - 2026-09-15
 
 - Keep a manual page drag from snapping back to the previous page when it is
