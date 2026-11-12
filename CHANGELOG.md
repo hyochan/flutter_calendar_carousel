@@ -1,5 +1,7 @@
 ## [Unreleased]
 
+## [4.0.0] - 2026-11-12
+
 ### Breaking changes
 
 - Build on the standalone `material_ui` package instead of the in-framework
@@ -17,6 +19,7 @@
 - Update the example's Android build to Gradle 9.5.0, Android Gradle Plugin
   9.3.1, and Kotlin 2.4.20, which Flutter 3.50 requires, and apply Flutter's
   iOS 15 deployment-target migration.
+
 
 ## [3.0.2] - 2026-09-21
 
