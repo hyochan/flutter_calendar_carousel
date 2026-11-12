@@ -70,7 +70,9 @@ versions through `dependency_overrides` merely to report everything as latest.
 - Resolve a review thread only after its valid finding is fixed and pushed, or
   after an evidence-backed reply shows why no code change is appropriate.
 - A requested review loop never implies merge authority. Stop at a clean,
-  verified PR unless the user explicitly asks to merge.
+  verified PR unless the user explicitly asks to merge. An explicit
+  `loop-review` request is that authorization for its one change, including
+  the stable release; see `.codex/skills/loop-review/SKILL.md`.
 - Follow `.codex/skills/review-pr/SKILL.md` for review polling and
   `.claude/commands/review-pr.md` as the shared command entry point.
 
