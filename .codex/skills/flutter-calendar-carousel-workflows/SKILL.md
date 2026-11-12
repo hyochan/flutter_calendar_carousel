@@ -13,8 +13,9 @@ command entry points.
 1. Read `AGENTS.md` before changing the repository.
 2. Read only the matching `.claude/commands/*.md` workflow below.
 3. Apply this skill's cross-workflow safeguards when command prose is concise.
-4. For `review-pr`, `review-self`, or `rebase-main`, use the matching specialized
-   `.codex/skills/<name>/SKILL.md` as the canonical procedure.
+4. For `review-pr`, `review-self`, `rebase-main`, or `loop-review`, use the
+   matching specialized `.codex/skills/<name>/SKILL.md` as the canonical
+   procedure.
 
 ## Command Mapping
 
@@ -27,6 +28,8 @@ command entry points.
 - Daily repository maintenance → `.claude/commands/daily-routine.md`
 - Updating a branch from `main` → `$rebase-main`
 - Release or publishing work → `.claude/guides/05-deployment.md`
+- Complete change-to-pub.dev loop (PR, review, merge, release) →
+  `.claude/commands/loop-review.md` and `$loop-review`
 
 Read the selected file completely before acting. Do not load every workflow by
 default.
@@ -45,7 +48,8 @@ default.
 - Do not edit another contributor's branch without explicit permission.
 - Do not treat unavailable external review automation as success; cover it with
   one `$review-self` pass for the exact current head.
-- Do not merge, tag, publish, or deploy unless explicitly requested.
+- Do not merge, tag, publish, or deploy unless explicitly requested. An
+  explicit `$loop-review` request is that authorization for its one change.
 
 ## GitHub Review Threads
 

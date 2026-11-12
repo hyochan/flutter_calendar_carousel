@@ -1,0 +1,4 @@
+interface:
+  display_name: "Loop Review"
+  short_description: "Review, merge, and release a clean change to pub.dev"
+  default_prompt: "Use $loop-review to start from the latest origin/main, stabilize the change, open a PR, address reviews, merge it, and release it to pub.dev."
