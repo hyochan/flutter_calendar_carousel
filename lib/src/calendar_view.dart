@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/src/calendar_theme.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// The calendar page layout.
 enum CalendarView {
@@ -200,21 +200,31 @@ class CalendarWeekdayDetails {
 }
 
 /// Builds custom content for one calendar day.
-typedef CalendarDayBuilder<T> =
-    Widget? Function(BuildContext context, CalendarDayDetails<T> day);
+typedef CalendarDayBuilder<T> = Widget? Function(
+  BuildContext context,
+  CalendarDayDetails<T> day,
+);
 
 /// Builds the marker layer for a day with events.
-typedef CalendarMarkerBuilder<T> =
-    Widget? Function(BuildContext context, CalendarDayDetails<T> day);
+typedef CalendarMarkerBuilder<T> = Widget? Function(
+  BuildContext context,
+  CalendarDayDetails<T> day,
+);
 
 /// Resolves a date-specific style merged before today, disabled, and selected.
-typedef CalendarDayStyleResolver<T> =
-    CalendarDayStyle? Function(BuildContext context, CalendarDayDetails<T> day);
+typedef CalendarDayStyleResolver<T> = CalendarDayStyle? Function(
+  BuildContext context,
+  CalendarDayDetails<T> day,
+);
 
 /// Builds a replacement header.
-typedef CalendarHeaderBuilder =
-    Widget Function(BuildContext context, CalendarHeaderDetails details);
+typedef CalendarHeaderBuilder = Widget Function(
+  BuildContext context,
+  CalendarHeaderDetails details,
+);
 
 /// Builds one replacement weekday label.
-typedef CalendarWeekdayBuilder =
-    Widget? Function(BuildContext context, CalendarWeekdayDetails details);
+typedef CalendarWeekdayBuilder = Widget? Function(
+  BuildContext context,
+  CalendarWeekdayDetails details,
+);

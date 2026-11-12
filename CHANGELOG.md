@@ -1,5 +1,23 @@
 ## [Unreleased]
 
+### Breaking changes
+
+- Build on the standalone `material_ui` package instead of the in-framework
+  `package:flutter/material.dart`, which Flutter 3.50 deprecates
+  ([#431](https://github.com/hyochan/flutter_calendar_carousel/issues/431)).
+  Host the calendar under a `material_ui` `MaterialApp`; apps that have not
+  migrated should stay on 3.x. The calendar API itself is unchanged.
+- Require Dart `^3.13.0` and Flutter `>=3.47.0`, the minimums of `material_ui`.
+
+### Added and changed
+
+- Add a regression test for localized tooltips and the date picker under
+  `material_ui` localization delegates.
+- Document the 3.x-to-4.0 migration and the `material_ui` hosting requirement.
+- Update the example's Android build to Gradle 9.5.0, Android Gradle Plugin
+  9.3.1, and Kotlin 2.4.20, which Flutter 3.50 requires, and apply Flutter's
+  iOS 15 deployment-target migration.
+
 ## [3.0.2] - 2026-09-21
 
 - docs(agents): require labels on issues and pull requests (#433)

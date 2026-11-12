@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/src/calendar_config.dart';
 import 'package:flutter_calendar_carousel/src/calendar_theme.dart';
 import 'package:flutter_calendar_carousel/src/calendar_view.dart';
 import 'package:intl/intl.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Internal renderer for localized weekday labels.
 class WeekdayRow extends StatelessWidget {

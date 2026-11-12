@@ -1,9 +1,9 @@
 import 'dart:ui' show SemanticsAction, Tristate;
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   test('month and week constructors expose predictable paging defaults', () {

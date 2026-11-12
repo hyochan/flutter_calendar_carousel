@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Builds an accessible label for a built-in event marker count.
-typedef CalendarMarkerSemanticLabelBuilder =
-    String Function(BuildContext context, int eventCount);
+typedef CalendarMarkerSemanticLabelBuilder = String Function(
+  BuildContext context,
+  int eventCount,
+);
 
 /// Visual styling for one calendar day.
 @immutable

@@ -3,7 +3,6 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/src/calendar_config.dart';
 import 'package:flutter_calendar_carousel/src/calendar_date_utils.dart';
 import 'package:flutter_calendar_carousel/src/calendar_header.dart';
@@ -13,6 +12,7 @@ import 'package:flutter_calendar_carousel/src/calendar_view.dart';
 import 'package:flutter_calendar_carousel/src/weekday_row.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart' show DateFormat;
+import 'package:material_ui/material_ui.dart';
 
 export 'package:flutter_calendar_carousel/src/calendar_config.dart';
 export 'package:flutter_calendar_carousel/src/calendar_theme.dart';
