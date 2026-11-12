@@ -8,10 +8,15 @@
 An accessible, theme-aware Flutter calendar with lazy month and week paging,
 controlled dates, typed events, and concise customization APIs.
 
-> **Upgrading from 2.x? Version 3.0 is intentionally breaking.** The 2.x
-> compatibility layer, package-owned event models, and legacy styling flags
-> have been removed. Review the complete
-> [2.x-to-3.0 migration guide](#migrating-from-2x-to-30) before upgrading.
+> **Upgrading from 3.x? Version 4.0 is built on the standalone
+> [`material_ui`](https://pub.dev/packages/material_ui) package** and requires
+> Flutter 3.47 or later. Apps that still import `package:flutter/material.dart`
+> must stay on 3.x until they migrate. See
+> [Migrating from 3.x to 4.0](#migrating-from-3x-to-40).
+>
+> **Upgrading from 2.x?** Version 3.0 removed the 2.x compatibility layer,
+> package-owned event models, and legacy styling flags. Review the
+> [2.x-to-3.0 migration guide](#migrating-from-2x-to-30) first.
 
 ![Month and week calendar navigation with event selection](doc/calendar-demo.gif)
 
@@ -25,11 +30,21 @@ flutter pub add flutter_calendar_carousel
 ```
 
 ```dart
-import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
+import 'package:material_ui/material_ui.dart';
 ```
 
-The package requires Dart `>=3.8.0 <4.0.0`.
+The package requires Dart `^3.13.0` and Flutter `>=3.47.0`, and is built on
+[`material_ui`](https://pub.dev/packages/material_ui). Add it to your app if you
+have not already:
+
+```shell
+flutter pub add material_ui
+```
+
+Your app must host the calendar under a `material_ui` `MaterialApp`, or under
+a `Localizations` ancestor that includes `material_ui`'s Material delegates. See
+[Material UI requirement](#material-ui-requirement).
 
 ## Quick start
 
@@ -214,32 +229,36 @@ locale when the app provides matching Material localizations and otherwise
 falls back safely. `firstDayOfWeek` accepts `CalendarWeekday`; when omitted,
 locale data decides.
 
-## Using with material_ui
+## Material UI requirement
 
-The calendar renders with the in-framework Material libraries
-(`package:flutter/material.dart`). If your app has migrated to the standalone
-`material_ui` package, wrap the app—or at least the calendar's subtree—in
-`MaterialUiCompatibilityBridge` so the calendar can resolve
-`MaterialLocalizations` and inherit your theme:
+Flutter 3.50 deprecates the in-framework Material and Cupertino libraries in
+favor of the standalone `material_ui` and `cupertino_ui` packages. Starting
+with 4.0 the calendar's header buttons, tooltips, theme defaults, and built-in
+date picker come from `package:material_ui`, so it reads `Theme`,
+`MaterialLocalizations`, and `DatePickerThemeData` from the `material_ui`
+widgets above it.
 
 ```dart
 import 'package:material_ui/material_ui.dart';
 
 MaterialApp(
-  builder: (context, child) => MaterialUiCompatibilityBridge(child: child!),
+  locale: const Locale('ko'),
+  supportedLocales: const <Locale>[Locale('en'), Locale('ko')],
+  // Includes the Material, Cupertino, and Widgets delegates.
+  localizationsDelegates: GlobalMaterialLocalizations.delegates,
   home: const HomeScreen(),
 )
 ```
 
-Place the bridge around the navigator child as shown so the built-in date
-picker is covered too. If you already use `builder`, incorporate the bridge
-into it. The bridge forwards `colorScheme`, `textTheme`, `visualDensity`, and
-`platform` only; app-level component themes such as `DatePickerThemeData` are
-not forwarded, so the built-in picker follows the bridged color scheme and text
-theme.
+`material_ui` ships localization delegates itself; you no longer need
+`flutter_localizations` for the calendar's tooltips and date picker.
 
-Migrating the package itself to `material_ui` and `cupertino_ui` is tracked in
-[#431](https://github.com/hyochan/flutter_calendar_carousel/issues/431).
+There is no bridge in the other direction. Hosting 4.0 under a `MaterialApp`
+from `package:flutter/material.dart` fails (debug builds report
+`No MaterialLocalizations found.`), and a legacy `Theme` is not inherited. If
+your app has not migrated yet, keep depending on `^3.0.2`. The 3.x line uses
+the in-framework libraries and can be hosted by either kind of app; under a
+`material_ui` app, wrap it in `MaterialUiCompatibilityBridge`.
 
 ## Accessibility and responsive layouts
 
@@ -277,6 +296,35 @@ remains the date's hit and semantics target.
   number of events.
 - A custom marker builder is called once per event-bearing visible day build;
   bound any per-event work inside it.
+
+## Migrating from 3.x to 4.0
+
+4.0 changes no calendar API. Constructors, configuration objects, callbacks,
+and defaults are identical to 3.0.2. The breaking change is the Material
+library the package is built on.
+
+1. Upgrade to Flutter 3.47 or later (Dart 3.13 or later).
+2. Migrate your app to `material_ui`. Flutter's automated fix rewrites the
+   imports and adds the dependency:
+
+   ```shell
+   dart fix --apply --code=migrate_design_widgets
+   ```
+
+   See Flutter's
+   [migration guide](https://docs.flutter.dev/release/breaking-changes/material-ui-and-cupertino-ui)
+   for manual steps.
+3. Replace `flutter_localizations` delegates with
+   `GlobalMaterialLocalizations.delegates` from `material_ui`.
+4. Remove any `MaterialUiCompatibilityBridge` you added only for this calendar;
+   it is no longer needed. Keep it if other dependencies still use
+   `package:flutter/material.dart`.
+5. Bump the dependency to `flutter_calendar_carousel: ^4.0.0`.
+
+Types you pass to the calendar, such as `TextStyle`, `Color`, `Widget`,
+`EdgeInsetsGeometry`, `OutlinedBorder`, and `ScrollPhysics`, are core Flutter
+types, so existing configuration code compiles unchanged once the app imports
+`material_ui`.
 
 ## Migrating from 2.x to 3.0
 

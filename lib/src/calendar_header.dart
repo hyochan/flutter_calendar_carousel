@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/src/calendar_config.dart';
 import 'package:flutter_calendar_carousel/src/calendar_view.dart';
+import 'package:material_ui/material_ui.dart';
 
 const double _compactHeaderWidth = kMinInteractiveDimension * 2 + 24;
 

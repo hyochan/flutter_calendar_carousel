@@ -1,6 +1,6 @@
 # flutter_calendar_carousel example
 
-This Material 3 app demonstrates the 3.0 API as a real package consumer:
+This Material 3 app demonstrates the 4.0 API as a real package consumer:
 controlled month/week views, an application-owned event model, date-only event
 indexing, custom markers, theme/config objects, date-picker navigation, and
 large-text responsive behavior.
@@ -25,7 +25,7 @@ The public entrypoint contains the calendar and all view, configuration, theme,
 and builder types:
 
 ```dart
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
 
 class CalendarPreview extends StatefulWidget {
@@ -85,5 +85,5 @@ default constructor when the layout changes at runtime.
   marker uses a concise English fallback.
 - Test at narrow widths, RTL direction, and large accessibility text scales.
 
-See the [package README](../README.md) for the full API guide and the complete
-2.x-to-3.0 migration table.
+See the [package README](../README.md) for the full API guide, the 3.x-to-4.0
+`material_ui` migration, and the complete 2.x-to-3.0 migration table.

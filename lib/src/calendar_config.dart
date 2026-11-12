@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/src/calendar_view.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Header visibility, interaction, and layout configuration.
 @immutable

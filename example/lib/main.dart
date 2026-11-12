@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() => runApp(const CalendarDemoApp());
 
@@ -114,9 +114,8 @@ class _CalendarDemoPageState extends State<CalendarDemoPage> {
 
   void _changeView(Set<CalendarView> selection) {
     final nextView = selection.first;
-    final firstDayOfWeek = MaterialLocalizations.of(
-      context,
-    ).firstDayOfWeekIndex;
+    final firstDayOfWeek = MaterialLocalizations.of(context)
+        .firstDayOfWeekIndex;
     setState(() {
       _view = nextView;
       _focusedDate = _selectedDate;
@@ -127,9 +126,8 @@ class _CalendarDemoPageState extends State<CalendarDemoPage> {
   }
 
   void _selectDate(DateTime date, List<DemoEvent> events) {
-    final firstDayOfWeek = MaterialLocalizations.of(
-      context,
-    ).firstDayOfWeekIndex;
+    final firstDayOfWeek = MaterialLocalizations.of(context)
+        .firstDayOfWeekIndex;
     setState(() {
       _selectedDate = date;
       _focusedDate = date;
@@ -141,9 +139,8 @@ class _CalendarDemoPageState extends State<CalendarDemoPage> {
   }
 
   void _showToday() {
-    final firstDayOfWeek = MaterialLocalizations.of(
-      context,
-    ).firstDayOfWeekIndex;
+    final firstDayOfWeek = MaterialLocalizations.of(context)
+        .firstDayOfWeekIndex;
     setState(() {
       _selectedDate = _today;
       _focusedDate = _today;

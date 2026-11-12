@@ -1,7 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:example/main.dart';
 import 'package:flutter_calendar_carousel/flutter_calendar_carousel.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   testWidgets('switches the demo between month and week views', (tester) async {
