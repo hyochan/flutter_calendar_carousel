@@ -13,7 +13,8 @@ merge, tag, publish, or release authority.
 
 1. Read `AGENTS.md`; confirm current branch, upstream, worktrees, and full status.
 2. If on `main`, create a scoped `codex/<topic>` branch unless the user supplied
-   another valid branch name.
+   another valid branch name. The only exception is an explicit
+   `loop-review-self` run, which commits its qualifying change on `main`.
 3. Run the relevant checks before staging.
 4. Stage only owned paths. Use `--all` only when every visible change belongs to
    the requested task.

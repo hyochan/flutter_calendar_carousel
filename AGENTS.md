@@ -29,7 +29,9 @@ and user-invoked command entry points live in `.claude/commands/`.
   corresponding Flutter, CocoaPods, or Gradle command can regenerate them.
 - Preserve unrelated user changes. Never use destructive Git recovery commands.
 - Do not commit directly to `main`, force-push, merge, publish, or release unless
-  the user explicitly authorized that action.
+  the user explicitly authorized that action. An explicit `loop-review-self`
+  request authorizes one direct `main` commit for a qualifying docs or
+  housekeeping change only; see `.codex/skills/loop-review-self/SKILL.md`.
 
 ## Verification
 

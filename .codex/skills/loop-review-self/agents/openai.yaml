@@ -1,0 +1,4 @@
+interface:
+  display_name: "Loop Review Self"
+  short_description: "Self-review a minor docs change and push it to main"
+  default_prompt: "Use $loop-review-self to review this minor documentation or housekeeping change until two clean snapshots, verify it, and push it directly to main."
