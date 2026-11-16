@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [4.0.1] - 2026-11-16
+
+- docs(agents): add loop-review workflow (#435)
+
+
 ## [4.0.0] - 2026-11-12
 
 ### Breaking changes
