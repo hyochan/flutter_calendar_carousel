@@ -39,7 +39,7 @@ jobs:
       # short-lived pub.dev credential. The Flutter SDK's dart binary shadows
       # this action's binary below, but continues to use that credential.
       - name: Set up pub.dev authentication
-        uses: dart-lang/setup-dart@7654d458321ee25acccccfdb86cd48bd95768ff1 # v1.8.0
+        uses: dart-lang/setup-dart@2286a0c042b44434fe26d292bbce8d34f7ec662b # v1.8.2
 
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
