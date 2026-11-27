@@ -95,7 +95,10 @@ jobs:
           # Agent workflows, CI, tests, and repository housekeeping change
           # nothing for package consumers. Release only when a consumer-facing
           # path changed since the previous tag.
-          if ! git diff --name-only "${prev_tag}..HEAD" | grep -Eq '^(lib/|example/lib/|pubspec\.yaml$|README\.md$|example/README\.md$|CHANGELOG\.md$|LICENSE$)'; then
+          consumer_changes=$(git diff --name-only "${prev_tag}..HEAD" -- \
+            lib example/lib pubspec.yaml README.md example/README.md \
+            CHANGELOG.md LICENSE)
+          if [ -z "$consumer_changes" ]; then
             echo "No consumer-facing changes since ${prev_tag}; nothing to release."
             echo "should_release=false" >> "$GITHUB_OUTPUT"
             echo "reason=no consumer-facing changes since ${prev_tag}" >> "$GITHUB_OUTPUT"
